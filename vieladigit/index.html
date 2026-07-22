@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ===================== SEO / METADADOS ===================== -->
+<!-- Ajuste os textos abaixo se quiser refinar como o site aparece no Google -->
+<title>Fernando Vilela | Business Intelligence, Power BI &amp; Dados</title>
+<meta name="description" content="Fernando Vilela — Analista e Consultor de Business Intelligence. Power BI, DAX, SQL e automação de relatórios para transformar dados em decisões. Belo Horizonte, MG.">
+<meta name="keywords" content="Business Intelligence, Power BI, DAX, SQL, Consultor BI, Dashboards, Belo Horizonte, Vilela">
+<meta name="author" content="Fernando Vilela">
+
+<!-- Open Graph (compartilhamento em redes sociais / WhatsApp) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Fernando Vilela | Business Intelligence &amp; Power BI">
+<meta property="og:description" content="Consultoria em Business Intelligence: dashboards, automação e análise de dados com Power BI, DAX e SQL.">
+<meta property="og:image" content="https://vieladigit.com.br/assets/fernando-vilela.jpg">
+<meta property="og:url" content="https://vieladigit.com.br/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%232E6E6A%22/><text x=%2250%22 y=%2266%22 font-size=%2258%22 font-family=%22Arial%22 fill=%22white%22 text-anchor=%22middle%22>V</text></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ===================== HEADER / NAV ===================== -->
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="#topo" class="logo">Viela<span>Digit</span></a>
+
+    <nav class="main-nav" id="mainNav">
+      <a href="#sobre" data-i18n="nav_about">Sobre</a>
+      <a href="#experiencia" data-i18n="nav_experience">Experiência</a>
+      <a href="#portfolio" data-i18n="nav_portfolio">Portfólio</a>
+      <a href="#competencias" data-i18n="nav_skills">Competências</a>
+      <a href="#formacao" data-i18n="nav_education">Formação</a>
+      <a href="#contato" class="nav-cta" data-i18n="nav_contact">Contato</a>
+    </nav>
+
+    <div class="header-controls">
+      <button id="langToggle" class="pill-btn" aria-label="Alternar idioma" title="Português / English">
+        <span class="lang-code">PT</span>
+      </button>
+      <button id="themeToggle" class="pill-btn icon-btn" aria-label="Alternar tema claro/escuro" title="Modo claro / escuro">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+      </button>
+      <button id="navToggle" class="nav-toggle" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="topo">
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <p class="eyebrow" data-i18n="hero_eyebrow">Business Intelligence &amp; Dados</p>
+      <h1 data-i18n="hero_title">Transformo dados de produção em decisões claras.</h1>
+      <p class="hero-sub" data-i18n="hero_sub">
+        Sou Fernando Vilela, analista e consultor de Business Intelligence em Belo Horizonte.
+        Mais de 20 anos ligando processos produtivos, dados e Power BI para dar clareza a quem decide.
+      </p>
+      <div class="hero-actions">
+        <a href="#contato" class="btn btn-primary" data-i18n="hero_cta_primary">Vamos conversar</a>
+        <a href="#experiencia" class="btn btn-ghost" data-i18n="hero_cta_secondary">Ver experiência</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="portrait-frame">
+        <!--
+          FOTO DE PERFIL
+          Já usei a foto que você enviou (fernando_terno_2.jpeg), salva em:
+          /assets/fernando-vilela.jpg
+          Para trocar por outra no futuro, basta substituir esse arquivo
+          mantendo o mesmo nome, ou trocar o "src" abaixo.
+        -->
+        <img src="assets/fernando-vilela.jpg" alt="Fernando Vilela, Analista de Business Intelligence" class="portrait-img">
+      </div>
+
+      <!-- Painel "dashboard" — o elemento de assinatura visual do site -->
+      <div class="kpi-panel" aria-hidden="false">
+        <div class="kpi-panel-head">
+          <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+          <span class="kpi-panel-title" data-i18n="kpi_panel_title">painel_fernando.pbix</span>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-number" data-count="21">0</span>
+            <span class="kpi-label" data-i18n="kpi_years">anos de experiência</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-number" data-count="16">0</span>
+            <span class="kpi-label" data-i18n="kpi_stellantis">anos em BI na indústria automotiva</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-number" data-count="5">0</span>
+            <span class="kpi-label" data-i18n="kpi_certs">certificações em dados &amp; nuvem</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-number" data-count="3">0</span>
+            <span class="kpi-label" data-i18n="kpi_langs">idiomas de trabalho</span>
+          </div>
+        </div>
+
+        <div class="mini-chart" aria-hidden="true">
+          <span style="--h:38%"></span><span style="--h:52%"></span><span style="--h:46%"></span>
+          <span style="--h:70%"></span><span style="--h:64%"></span><span style="--h:88%"></span>
+          <span style="--h:78%"></span><span style="--h:95%"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SOBRE ===================== -->
+<section class="section" id="sobre">
+  <div class="container section-grid">
+    <div class="section-heading">
+      <span class="eyebrow" data-i18n="about_eyebrow">Sobre</span>
+      <h2 data-i18n="about_title">Da linha de produção ao Power BI</h2>
+    </div>
+    <div class="section-body">
+      <p data-i18n="about_p1">
+        Formado em Engenharia de Produção, construí minha carreira dentro do chão de fábrica antes de
+        migrar para a análise de dados — o que me dá uma leitura diferente sobre BI: cada dashboard
+        precisa resolver um problema real de operação, não só parecer bonito.
+      </p>
+      <p data-i18n="about_p2">
+        Hoje atuo como consultor independente através da Vilela Soluções em Business Intelligence,
+        ajudando empresas a modelar dados, criar dashboards em Power BI e automatizar relatórios que
+        antes eram feitos manualmente em planilhas.
+      </p>
+      <div class="lang-tags">
+        <span class="tag" data-i18n="lang_pt">Português (nativo)</span>
+        <span class="tag" data-i18n="lang_en">Inglês</span>
+        <span class="tag" data-i18n="lang_it">Italiano</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EXPERIÊNCIA ===================== -->
+<section class="section section-alt" id="experiencia">
+  <div class="container">
+    <div class="section-heading center">
+      <span class="eyebrow" data-i18n="exp_eyebrow">Experiência</span>
+      <h2 data-i18n="exp_title">Uma trajetória construída em dados</h2>
+    </div>
+
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-marker"><span class="timeline-date">2024 — <span data-i18n="present">atual</span></span></div>
+        <div class="timeline-card">
+          <h3 data-i18n="exp1_role">Analista de TI &amp; Consultor de BI</h3>
+          <p class="timeline-company">Vilela Soluções em Business Inteligência · <span data-i18n="exp1_loc">Belo Horizonte, MG</span></p>
+          <p data-i18n="exp1_desc">Consultoria independente em Business Intelligence e análise de dados para empresas de diferentes setores.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-marker"><span class="timeline-date">2024 — <span data-i18n="present">atual</span></span></div>
+        <div class="timeline-card">
+          <h3 data-i18n="exp2_role">Business Intelligence Developer</h3>
+          <p class="timeline-company">poenatela · <span data-i18n="exp1_loc">Belo Horizonte, MG</span></p>
+          <ul data-i18n-list="exp2_list">
+            <li>Coleta e análise de dados</li>
+            <li>Modelagem e integração de dados</li>
+            <li>Criação de dashboards e relatórios</li>
+            <li>Identificação de insights e tendências</li>
+            <li>Automatização de processos de relatório</li>
+            <li>Treinamento e colaboração com equipes</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-marker"><span class="timeline-date">2020 – 2024</span></div>
+        <div class="timeline-card">
+          <h3 data-i18n="exp3_role">Analista PL de Melhoria Contínua — ISBU</h3>
+          <p class="timeline-company">Stellantis · Betim, MG</p>
+          <p data-i18n="exp3_desc">
+            Desenvolvimento de medidas em DAX e modelagem avançada em Power BI / SSAS para dashboards
+            globais de performance e custo produtivo, usados por plantas da Stellantis em todos os continentes.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-marker"><span class="timeline-date">2018 – 2020</span></div>
+        <div class="timeline-card">
+          <h3 data-i18n="exp4_role">Analista de Produto e Processos — PP&amp;C</h3>
+          <p class="timeline-company">Stellantis · Betim, MG</p>
+          <p data-i18n="exp4_desc">
+            Ferramentas de BI para controle de KPIs, estoque e paradas de linha, e sistema de gestão de
+            armazenagem com tecnologia MES Siemens.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-marker"><span class="timeline-date">2008 – 2018</span></div>
+        <div class="timeline-card">
+          <h3 data-i18n="exp5_role">Analista PL de Melhoria Contínua</h3>
+          <p class="timeline-company">Stellantis · Betim, MG</p>
+          <p data-i18n="exp5_desc">
+            Gestão do projeto SGPP MES SIMATIC IT desde 2008, controlando recebimento, armazenagem,
+            produção, expedição e KPIs de toda a planta.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-marker"><span class="timeline-date">2005 – 2007</span></div>
+        <div class="timeline-card">
+          <h3 data-i18n="exp6_role">Analista de Produto e Processo</h3>
+          <p class="timeline-company">Stellantis South America · Betim, MG</p>
+          <p data-i18n="exp6_desc">
+            Análises qualitativas de produtos estampados e acompanhamento de indicadores para melhoria
+            contínua antes do lançamento em produção.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COMPETÊNCIAS ===================== -->
+<section class="section" id="competencias">
+  <div class="container">
+    <div class="section-heading center">
+      <span class="eyebrow" data-i18n="skills_eyebrow">Competências</span>
+      <h2 data-i18n="skills_title">Ferramentas do dia a dia</h2>
+    </div>
+
+    <div class="skills-grid">
+      <div class="skill-group">
+        <h3 data-i18n="skills_bi">Business Intelligence</h3>
+        <div class="chip-row">
+          <span class="chip">Power BI</span>
+          <span class="chip">DAX</span>
+          <span class="chip">Power Query</span>
+          <span class="chip">SSAS</span>
+          <span class="chip">Pentaho Server</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3 data-i18n="skills_data">Dados &amp; Desenvolvimento</h3>
+        <div class="chip-row">
+          <span class="chip">SQL</span>
+          <span class="chip">JavaScript</span>
+          <span class="chip">Visual Studio Code</span>
+          <span class="chip">Google Cloud Platform</span>
+          <span class="chip">Microsoft Fabric</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3 data-i18n="skills_process">Processos &amp; Gestão</h3>
+        <div class="chip-row">
+          <span class="chip" data-i18n="skill_lean">Lean Production</span>
+          <span class="chip" data-i18n="skill_mes">MES / Simatic IT</span>
+          <span class="chip" data-i18n="skill_kpi">Gestão de KPIs</span>
+          <span class="chip" data-i18n="skill_pm">Gerenciamento de Projetos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PORTFÓLIO ===================== -->
+<section class="section section-alt" id="portfolio">
+  <div class="container">
+    <div class="section-heading center">
+      <span class="eyebrow" data-i18n="portfolio_eyebrow">Portfólio</span>
+      <h2 data-i18n="portfolio_title">Dashboards e projetos de Power BI</h2>
+      <p data-i18n="portfolio_sub">Clique em um projeto para abrir o dashboard interativo direto aqui no site.</p>
+    </div>
+
+    <!--
+      Os cartões abaixo são gerados automaticamente a partir do arquivo
+      js/portfolio.js — para adicionar, remover ou editar projetos, edite
+      APENAS aquele arquivo (não é necessário mexer neste HTML).
+    -->
+    <div class="portfolio-grid" id="portfolioGrid"></div>
+  </div>
+</section>
+
+<!-- Modal que abre o relatório Power BI embutido (iframe) -->
+<div class="portfolio-modal" id="portfolioModal" aria-hidden="true">
+  <div class="portfolio-modal-backdrop" id="portfolioModalBackdrop"></div>
+  <div class="portfolio-modal-panel" role="dialog" aria-modal="true">
+    <div class="portfolio-modal-head">
+      <span class="portfolio-modal-title" id="portfolioModalTitle"></span>
+      <button class="portfolio-modal-close" id="portfolioModalClose" aria-label="Fechar">✕</button>
+    </div>
+    <div class="portfolio-modal-frame">
+      <iframe id="portfolioModalIframe" src="" title="Power BI Dashboard" frameborder="0" allowfullscreen="true" loading="lazy"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CERTIFICAÇÕES ===================== -->
+<section class="section section-alt" id="certificacoes">
+  <div class="container">
+    <div class="section-heading center">
+      <span class="eyebrow" data-i18n="certs_eyebrow">Certificações</span>
+      <h2 data-i18n="certs_title">Aprendizado contínuo em dados</h2>
+    </div>
+
+    <div class="cert-grid">
+      <div class="cert-card">
+        <span class="cert-icon">◆</span>
+        <p data-i18n="cert1">Fundamentos do Microsoft Fabric</p>
+      </div>
+      <div class="cert-card">
+        <span class="cert-icon">◆</span>
+        <p data-i18n="cert2">Google Cloud Platform — Big Data and Machine Learning Fundamentals</p>
+      </div>
+      <div class="cert-card">
+        <span class="cert-icon">◆</span>
+        <p data-i18n="cert3">Introdução à Ciência de Dados: Conceitos Básicos</p>
+      </div>
+      <div class="cert-card">
+        <span class="cert-icon">◆</span>
+        <p data-i18n="cert4">Leveraging Unstructured Data with Cloud Dataproc on Google Cloud Platform</p>
+      </div>
+      <div class="cert-card">
+        <span class="cert-icon">◆</span>
+        <p data-i18n="cert5">Fundamentos do Big Data: Técnicas e Conceitos</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FORMAÇÃO ===================== -->
+<section class="section" id="formacao">
+  <div class="container">
+    <div class="section-heading center">
+      <span class="eyebrow" data-i18n="edu_eyebrow">Formação Acadêmica</span>
+      <h2 data-i18n="edu_title">Base técnica sólida</h2>
+    </div>
+
+    <div class="edu-grid">
+      <div class="edu-card edu-card-current">
+        <span class="edu-badge" data-i18n="edu0_badge">Em andamento</span>
+        <h3 data-i18n="edu0_title">MBA em Business Intelligence &amp; Analytics 360</h3>
+        <!--
+          Se quiser exibir o nome da instituição deste MBA, troque o texto
+          "(informe a instituição)" abaixo e também a versão em inglês
+          no arquivo js/translations.js (chave edu0_school).
+        -->
+        <p class="edu-school" data-i18n="edu0_school">(informe a instituição)</p>
+        <p class="edu-year" data-i18n="edu0_year">Cursando atualmente</p>
+      </div>
+      <div class="edu-card">
+        <h3 data-i18n="edu1_title">Pós-graduação, Gestão e Tecnologia da Informação</h3>
+        <p class="edu-school">IETEC</p>
+        <p class="edu-year">2011</p>
+      </div>
+      <div class="edu-card">
+        <h3 data-i18n="edu2_title">Especialização, Lean Production</h3>
+        <p class="edu-school">Universidade Federal de Santa Catarina</p>
+        <p class="edu-year">2008 – 2010</p>
+      </div>
+      <div class="edu-card">
+        <h3 data-i18n="edu3_title">Engenharia de Produção</h3>
+        <p class="edu-school">Centro Federal de Educação Tecnológica de Minas Gerais</p>
+        <p class="edu-year">2004 – 2008</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CONTATO ===================== -->
+<section class="section section-contact" id="contato">
+  <div class="container contact-inner">
+    <div class="section-heading">
+      <span class="eyebrow" data-i18n="contact_eyebrow">Contato</span>
+      <h2 data-i18n="contact_title">Vamos falar sobre os seus dados?</h2>
+      <p data-i18n="contact_sub">
+        Me conte o desafio que você quer resolver com dados ou Power BI.
+        Respondo rápido pelo WhatsApp ou e-mail.
+      </p>
+    </div>
+
+    <div class="contact-cards">
+      <a href="https://wa.me/5531982278121" target="_blank" rel="noopener" class="contact-card contact-whatsapp">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.33 4.95L2.05 22l5.31-1.39a9.9 9.9 0 0 0 4.68 1.19h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm5.8 14.09c-.24.68-1.4 1.3-1.93 1.38-.49.08-1.11.11-1.79-.11-.41-.13-.94-.31-1.62-.6-2.85-1.23-4.71-4.09-4.85-4.28-.14-.19-1.16-1.54-1.16-2.94 0-1.4.73-2.08 1-2.36.26-.28.57-.35.76-.35.19 0 .38 0 .55.01.18.01.41-.07.64.49.24.58.81 2 .88 2.14.07.14.12.31.02.5-.09.19-.14.31-.28.48-.14.16-.29.36-.42.48-.14.14-.28.29-.12.56.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.21 1.37.28.14.44.12.6-.07.16-.19.68-.79.87-1.06.18-.28.37-.23.62-.14.26.09 1.63.77 1.91.91.28.14.46.21.53.33.07.12.07.68-.17 1.36Z"/></svg>
+        <div>
+          <span class="contact-label" data-i18n="contact_whatsapp_label">WhatsApp</span>
+          <span class="contact-value">+55 31 98227-8121</span>
+        </div>
+      </a>
+
+      <a href="mailto:fjackvil@gmail.com" class="contact-card">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        <div>
+          <span class="contact-label" data-i18n="contact_email_label">E-mail</span>
+          <span class="contact-value">fjackvil@gmail.com</span>
+        </div>
+      </a>
+
+      <a href="https://www.linkedin.com/in/fernandojvilela" target="_blank" rel="noopener" class="contact-card">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm7 0h3.8v1.64h.05c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.5c0-1.31-.02-3-1.83-3-1.83 0-2.11 1.43-2.11 2.9V21h-4V9Z"/></svg>
+        <div>
+          <span class="contact-label">LinkedIn</span>
+          <span class="contact-value">/in/fernandojvilela</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© <span id="year"></span> Fernando Vilela — VielaDigit</span>
+    <span data-i18n="footer_made">Belo Horizonte, MG · Brasil</span>
+  </div>
+</footer>
+
+<script src="js/translations.js"></script>
+<script src="js/portfolio.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
