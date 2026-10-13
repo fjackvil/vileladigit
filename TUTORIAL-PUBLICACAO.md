@@ -1,6 +1,6 @@
-# Como publicar o site vieladigit.com.br — passo a passo para iniciantes
+# Como publicar o site vileladigit.com.br — passo a passo para iniciantes
 
-Você já tem o **domínio** (`vieladigit.com.br`) registrado no GoDaddy. Isso é só o "endereço".
+Você já tem o **domínio** (`vileladigit.com.br`) registrado no GoDaddy. Isso é só o "endereço".
 Para o site aparecer quando alguém digitar esse endereço, você precisa de um lugar para guardar
 os arquivos (hospedagem) e apontar o domínio para lá.
 
@@ -9,7 +9,7 @@ Existem dois caminhos possíveis — escolha um:
 - **Parte A — GitHub Pages (gratuito para sempre)**: recomendado para o seu caso, já que o site
   é só HTML/CSS/JS. Não precisa contratar nenhuma hospedagem paga.
 - **Parte B — Hospedagem tradicional paga** (GoDaddy, Hostinger, HostGator etc., com cPanel):
-  caminho mais tradicional, útil se no futuro você quiser e-mail profissional (`voce@vieladigit.com.br`)
+  caminho mais tradicional, útil se no futuro você quiser e-mail profissional (`voce@vileladigit.com.br`)
   ou recursos que exigem servidor próprio.
 
 Se estiver em dúvida, vá de **Parte A** — é grátis, funciona muito bem para este site, e dá para
@@ -31,7 +31,7 @@ hospedar sites estáticos como o seu. Você não paga nada por isso — só o do
 ## A.2 — Criar o repositório do site
 
 1. Já logado, clique no **"+"** no canto superior direito → **"New repository"**.
-2. Em **"Repository name"**, coloque exatamente: `vieladigit.com.br` (pode ser outro nome,
+2. Em **"Repository name"**, coloque exatamente: `vileladigit.com.br` (pode ser outro nome,
    mas esse já deixa claro para que serve).
 3. Marque a opção **"Public"** (repositórios do GitHub Pages gratuitos precisam ser públicos).
 4. Clique em **"Create repository"**.
@@ -39,8 +39,8 @@ hospedar sites estáticos como o seu. Você não paga nada por isso — só o do
 ## A.3 — Enviar os arquivos do site
 
 1. Dentro do repositório recém-criado, clique em **"Add file" → "Upload files"**.
-2. Extraia o `vieladigit-site.zip` no seu computador (clique com o botão direito → "Extrair tudo").
-3. Abra a pasta extraída (`vieladigit`) e arraste **o conteúdo de dentro dela** — não a pasta
+2. Extraia o `vileladigit-site.zip` no seu computador (clique com o botão direito → "Extrair tudo").
+3. Abra a pasta extraída (`vileladigit`) e arraste **o conteúdo de dentro dela** — não a pasta
    em si — para a área de upload do GitHub:
    ```
    index.html
@@ -58,15 +58,15 @@ hospedar sites estáticos como o seu. Você não paga nada por isso — só o do
 3. Em **"Build and deployment" → "Branch"**, selecione **`main`** e a pasta **`/ (root)`**, depois
    clique em **"Save"**.
 4. Aguarde 1-2 minutos. O GitHub vai mostrar um link parecido com
-   `https://seu-usuario.github.io/vieladigit.com.br/` — clicando nele o site já deve abrir
+   `https://seu-usuario.github.io/vileladigit.com.br/` — clicando nele o site já deve abrir
    (ainda no endereço do GitHub, não no seu domínio).
 
-## A.5 — Conectar seu domínio (vieladigit.com.br)
+## A.5 — Conectar seu domínio (vileladigit.com.br)
 
-1. Ainda na tela **Settings → Pages**, em **"Custom domain"**, digite `vieladigit.com.br` e
+1. Ainda na tela **Settings → Pages**, em **"Custom domain"**, digite `vileladigit.com.br` e
    clique em **"Save"**. Isso cria automaticamente um arquivo chamado `CNAME` no seu repositório.
 2. Agora vá para o painel da **GoDaddy** ([dcc.godaddy.com](https://dcc.godaddy.com)) → encontre
-   `vieladigit.com.br` → **"Gerenciar DNS" / "Manage DNS"**.
+   `vileladigit.com.br` → **"Gerenciar DNS" / "Manage DNS"**.
 3. Adicione (ou edite) os seguintes registros:
 
    | Tipo | Nome | Valor / Aponta para | TTL |
@@ -77,7 +77,7 @@ hospedar sites estáticos como o seu. Você não paga nada por isso — só o do
    | A | @ | 185.199.111.153 | 1 hora (padrão) |
    | CNAME | www | seu-usuario.github.io | 1 hora (padrão) |
 
-   > No campo **"Nome"**, `@` representa o domínio raiz (`vieladigit.com.br` sem nada na frente).
+   > No campo **"Nome"**, `@` representa o domínio raiz (`vileladigit.com.br` sem nada na frente).
    > Se já existir algum registro **A** apontando para outro lugar (ex: o "parking" padrão da
    > GoDaddy), edite-o em vez de criar um novo, para não ter dois registros conflitando.
 4. Salve. A propagação pode levar de alguns minutos até 24h.
@@ -85,7 +85,7 @@ hospedar sites estáticos como o seu. Você não paga nada por isso — só o do
    marca de verificação verde e a opção **"Enforce HTTPS"** — marque essa caixa para ativar o
    cadeado de segurança (pode demorar algumas horas para ficar disponível na primeira vez).
 
-Pronto — `https://vieladigit.com.br` estará no ar, de graça, hospedado pelo GitHub.
+Pronto — `https://vileladigit.com.br` estará no ar, de graça, hospedado pelo GitHub.
 
 ## Como manter tudo sincronizado — GitHub Desktop (recomendado)
 
@@ -99,16 +99,16 @@ clica em um botão para enviar ("Push") as mudanças. O site atualiza sozinho em
 
 1. Baixe em [desktop.github.com](https://desktop.github.com) e instale.
 2. Abra o programa e clique em **"Sign in to GitHub.com"** — entre com a mesma conta que você
-   já usa (a que criou o repositório `vieladigit.com.br`).
+   já usa (a que criou o repositório `vileladigit.com.br`).
 
 ### 2. Clonar (baixar) o repositório para o seu computador
 
 "Clonar" é só o termo técnico para "baixar uma cópia sincronizada".
 
 1. No GitHub Desktop, vá em **File → Clone Repository**.
-2. Na aba **"GitHub.com"**, procure e selecione `vieladigit.com.br` na lista (é o repositório
+2. Na aba **"GitHub.com"**, procure e selecione `vileladigit.com.br` na lista (é o repositório
    que você já criou e subiu os arquivos).
-3. Escolha uma pasta no seu computador para guardar essa cópia (ex: `Documentos\vieladigit`) e
+3. Escolha uma pasta no seu computador para guardar essa cópia (ex: `Documentos\vileladigit`) e
    clique em **"Clone"**.
 4. Pronto — agora existe uma pasta no seu PC com todos os arquivos do site (`index.html`, `css/`,
    `js/`, `assets/`), ligada ao GitHub.
@@ -129,7 +129,7 @@ clica em um botão para enviar ("Push") as mudanças. O site atualiza sozinho em
    mudança — ex: *"Atualiza foto de perfil"* ou *"Adiciona novo projeto no portfólio"*.
 3. Clique no botão azul **"Commit to main"**.
 4. Clique em **"Push origin"** no topo (esse botão envia a mudança para o GitHub de verdade).
-5. Em 1-2 minutos, `https://vieladigit.com.br` já mostra a versão atualizada.
+5. Em 1-2 minutos, `https://vileladigit.com.br` já mostra a versão atualizada.
 
 A partir daqui, toda vez que quiser mudar algo é só repetir os passos 3 e 4: **editar → Commit →
 Push**. Não precisa repetir a instalação nem o clone.
@@ -143,13 +143,13 @@ Push**. Não precisa repetir a instalação nem o clone.
 # Parte B — Opção paga: Hospedagem tradicional (cPanel)
 
 Use este caminho se preferir uma hospedagem tradicional (por exemplo, para ter e-mail
-profissional `voce@vieladigit.com.br`, o que o GitHub Pages não oferece).
+profissional `voce@vileladigit.com.br`, o que o GitHub Pages não oferece).
 
 ---
 
 ## Passo 0 — Você já tem hospedagem?
 
-Seu domínio `vieladigit.com.br` está registrado no **GoDaddy**. Isso só garante o endereço —
+Seu domínio `vileladigit.com.br` está registrado no **GoDaddy**. Isso só garante o endereço —
 os arquivos do site precisam morar em uma **hospedagem** (que pode ser a própria GoDaddy ou
 outro provedor).
 
@@ -170,13 +170,13 @@ Você tem duas opções:
 - Acesse [godaddy.com](https://www.godaddy.com), faça login, e contrate um plano de
   **"Hospedagem de Sites" / "Web Hosting"**.
 - Ao contratar, a GoDaddy geralmente já pergunta se você quer usar um domínio que já possui —
-  selecione `vieladigit.com.br`. Isso evita todo o Passo 2 (apontamento de DNS), pois fica
+  selecione `vileladigit.com.br`. Isso evita todo o Passo 2 (apontamento de DNS), pois fica
   tudo dentro da mesma conta.
 
 **Opção B — Hospedagem em outro provedor** (Hostinger, HostGator, KingHost, Locaweb etc.):
 - Contrate o plano básico.
 - Quando perguntarem sobre domínio, escolha **"já tenho um domínio"** e informe
-  `vieladigit.com.br` — não registre um domínio novo, ele já existe na GoDaddy.
+  `vileladigit.com.br` — não registre um domínio novo, ele já existe na GoDaddy.
 - Você precisará apontar o DNS depois (Passo 2).
 
 Guarde o e-mail com os dados de acesso ao **painel de controle** (cPanel ou painel próprio do
@@ -199,7 +199,7 @@ Se a hospedagem é de **outro provedor**, você precisa trocar os nameservers no
    ```
 2. Acesse [dcc.godaddy.com](https://dcc.godaddy.com) (ou faça login em godaddy.com e clique em
    **"Meus Produtos" / "My Products"**).
-3. Encontre `vieladigit.com.br` na lista de domínios e clique nos três pontinhos (**...**) ao
+3. Encontre `vileladigit.com.br` na lista de domínios e clique nos três pontinhos (**...**) ao
    lado dele, depois em **"Gerenciar DNS" / "Manage DNS"**.
 4. Procure a seção **"Nameservers"** e clique em **"Alterar" / "Change"**.
 5. Selecione **"Personalizado" / "I'll use my own nameservers"** e cole os nameservers que a
@@ -223,11 +223,11 @@ A maioria das hospedagens compartilhadas usa o **cPanel**, um painel com ícones
 
 1. Acesse o cPanel (link e login enviados pelo seu provedor).
 2. Procure o ícone **"Gerenciador de Arquivos"** (File Manager).
-3. Entre na pasta **`public_html`** — é dentro dela que o site precisa ficar (é essa pasta que corresponde ao endereço `vieladigit.com.br`).
+3. Entre na pasta **`public_html`** — é dentro dela que o site precisa ficar (é essa pasta que corresponde ao endereço `vileladigit.com.br`).
 4. Se já existir algum arquivo padrão (como `index.html` de boas-vindas do provedor), pode apagá-lo.
-5. Clique em **"Carregar" / "Upload"** e envie o arquivo **`vieladigit-site.zip`** (o zip com todos os arquivos do site, que está junto com este tutorial).
+5. Clique em **"Carregar" / "Upload"** e envie o arquivo **`vileladigit-site.zip`** (o zip com todos os arquivos do site, que está junto com este tutorial).
 6. Depois do upload, clique com o botão direito no arquivo `.zip` dentro do Gerenciador de Arquivos e escolha **"Extrair" / "Extract"**.
-7. Confira se, depois de extrair, os seguintes itens aparecem **diretamente dentro de `public_html`** (e não dentro de uma subpasta chamada `vieladigit`):
+7. Confira se, depois de extrair, os seguintes itens aparecem **diretamente dentro de `public_html`** (e não dentro de uma subpasta chamada `vileladigit`):
    ```
    public_html/
      index.html
@@ -237,7 +237,7 @@ A maioria das hospedagens compartilhadas usa o **cPanel**, um painel com ícones
      js/portfolio.js
      assets/fernando-vilela.jpg
    ```
-   Se tudo caiu dentro de uma subpasta (ex: `public_html/vieladigit/index.html`), **mova** todo o conteúdo de dentro dela para a raiz de `public_html` (selecione tudo, "Mover", e mande para `public_html`), e depois apague a subpasta vazia.
+   Se tudo caiu dentro de uma subpasta (ex: `public_html/vileladigit/index.html`), **mova** todo o conteúdo de dentro dela para a raiz de `public_html` (selecione tudo, "Mover", e mande para `public_html`), e depois apague a subpasta vazia.
 8. Pode apagar o arquivo `.zip` depois de extrair (opcional).
 
 ### Opção B — Envio por FTP (alternativa)
@@ -256,7 +256,7 @@ Se preferir usar um programa de FTP como o **FileZilla** (gratuito):
 
 ## Passo 4 — Testar o site
 
-1. Abra o navegador e acesse **`https://vieladigit.com.br`**.
+1. Abra o navegador e acesse **`https://vileladigit.com.br`**.
 2. Se aparecer o site, ótimo! Teste:
    - O botão de **modo claro/escuro** no topo.
    - O botão **PT/EN** de idioma.
@@ -271,9 +271,9 @@ Se preferir usar um programa de FTP como o **FileZilla** (gratuito):
 Para o navegador mostrar o cadeado de segurança (`https://`), é preciso ativar um certificado SSL:
 
 1. No cPanel, procure por **"SSL/TLS Status"** ou **"AutoSSL"** (às vezes chamado de "Let's Encrypt").
-2. Selecione o domínio `vieladigit.com.br` e clique em **"Executar AutoSSL" / "Run AutoSSL"**.
+2. Selecione o domínio `vileladigit.com.br` e clique em **"Executar AutoSSL" / "Run AutoSSL"**.
 3. Aguarde alguns minutos. A maioria dos provedores brasileiros já ativa isso automaticamente e de graça.
-4. Depois de ativo, teste novamente acessando `https://vieladigit.com.br`.
+4. Depois de ativo, teste novamente acessando `https://vileladigit.com.br`.
 
 ---
 

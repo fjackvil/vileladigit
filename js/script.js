@@ -1,5 +1,5 @@
 /* ==========================================================================
-   VIELADIGIT — script.js
+   VILELA DIGIT — script.js
    Tema (claro/escuro), idioma (PT/EN), menu mobile e animação de KPIs
    ========================================================================== */
 

@@ -11,6 +11,7 @@ const translations = {
     nav_skills: "Competências",
     nav_education: "Formação",
     nav_contact: "Contato",
+    nav_client: "Área do cliente",
 
     hero_eyebrow: "Business Intelligence & Dados",
     hero_title: "Transformo dados de produção em decisões claras.",
@@ -104,6 +105,7 @@ const translations = {
     nav_skills: "Skills",
     nav_education: "Education",
     nav_contact: "Contact",
+    nav_client: "Client area",
 
     hero_eyebrow: "Business Intelligence & Data",
     hero_title: "I turn production data into clear decisions.",
