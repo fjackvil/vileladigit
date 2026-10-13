@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projetos | Painel Admin | Vilela Digit</title>
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%232E6E6A%22/><text x=%2250%22 y=%2266%22 font-size=%2258%22 font-family=%22Arial%22 fill=%22white%22 text-anchor=%22middle%22>V</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/area.css">
+</head>
+<body class="carregando">
+
+<header class="site-header area-header">
+  <div class="container header-inner">
+    <a href="index.html" class="logo">Vilela<span>Digit</span></a>
+    <div class="header-controls">
+      <span class="area-user"><span class="area-user-nome"><strong id="usuarioNome"></strong></span><span class="area-papel" id="usuarioPapel"></span></span>
+      <a href="alterar-senha.html" class="pill-btn" title="Alterar a minha senha">Minha senha</a>
+      <button id="themeToggle" class="pill-btn icon-btn" aria-label="Alternar tema claro/escuro" title="Modo claro / escuro">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+      </button>
+      <button id="botaoSair" class="pill-btn">Sair</button>
+    </div>
+  </div>
+</header>
+
+<main class="area-main">
+  <div class="container area-wrap">
+
+    <nav class="abas">
+      <a href="admin.html">Usuários</a>
+      <a href="admin-projetos.html" class="ativa">Projetos</a>
+      <a href="area-cliente.html">Ver área do cliente</a>
+    </nav>
+
+    <div class="area-titulo">
+      <span class="eyebrow">Painel Admin</span>
+      <h1>Projetos</h1>
+      <p>Crie projetos, escolha quem pode ver cada um e envie as páginas de acompanhamento.</p>
+    </div>
+
+    <!-- ===================== NOVO PROJETO ===================== -->
+    <section class="card">
+      <h2>Novo projeto</h2>
+      <div id="avisoNovo" class="aviso" role="alert"></div>
+      <form id="formProjeto" novalidate>
+        <div class="form-grid">
+          <div class="campo">
+            <label for="projNome">Nome</label>
+            <input type="text" id="projNome" placeholder="Ex.: ISBU Europa" required>
+          </div>
+          <div class="campo">
+            <label for="projDescricao">Descrição (o cliente vê)</label>
+            <input type="text" id="projDescricao" placeholder="Opcional">
+          </div>
+          <div class="campo">
+            <label for="projStatus">Status</label>
+            <select id="projStatus"></select>
+          </div>
+        </div>
+        <button type="submit" id="botaoCriarProjeto" class="btn btn-primary">Criar projeto</button>
+      </form>
+    </section>
+
+    <div id="avisoGeral" class="aviso" role="alert" style="margin-top:24px"></div>
+    <div id="listaProjetos"></div>
+
+  </div>
+</main>
+
+<footer class="area-footer">
+  <div class="container">© <span id="year"></span> Fernando Vilela — Vilela Digit</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/area-comum.js"></script>
+<script>
+(async function () {
+  "use strict";
+  const { sb, exigirAcesso, definirIdioma, aviso, escapar, formatarData, comBotaoOcupado } = window.Area;
+  definirIdioma("pt");
+
+  const perfil = await exigirAcesso({ papel: "admin" });
+  if (!perfil) return;
+
+  const STATUS = { planejamento: "Planejamento", em_andamento: "Em andamento", pausado: "Pausado", concluido: "Concluído" };
+  const TIPOS = { proposta: "Proposta", cronograma: "Cronograma", mockup: "Mockup", relatorio: "Relatório", outro: "Outro" };
+  const opcoes = (mapa, atual) =>
+    Object.entries(mapa).map(([v, t]) => `<option value="${v}"${v === atual ? " selected" : ""}>${t}</option>`).join("");
+
+  document.getElementById("projStatus").innerHTML = opcoes(STATUS, "em_andamento");
+
+  const avisoGeral = document.getElementById("avisoGeral");
+  const lista = document.getElementById("listaProjetos");
+  let projetos = [];
+  let clientes = [];
+
+  /* ------------------------------ Carregar dados ------------------------------ */
+  async function carregar() {
+    const [resUsuarios, resProjetos] = await Promise.all([
+      sb.rpc("admin_listar_usuarios"),
+      sb.from("projetos")
+        .select("id, nome, descricao, status, criado_em, projeto_acessos(usuario_id), paginas(id, titulo, tipo, ordem, visivel_cliente, atualizado_em)")
+        .order("criado_em", { ascending: false }),
+    ]);
+    if (resUsuarios.error || resProjetos.error) {
+      aviso(avisoGeral, "Erro ao carregar: " + (resUsuarios.error || resProjetos.error).message);
+      return;
+    }
+    clientes = (resUsuarios.data || []).filter((u) => u.papel === "cliente");
+    projetos = resProjetos.data || [];
+    desenhar();
+  }
+
+  /* ------------------------------ Desenhar a lista ------------------------------ */
+  function desenharAcessos(p) {
+    if (!clientes.length) return '<p class="campo-dica">Nenhum cliente cadastrado ainda. Cadastre em "Usuários".</p>';
+    const liberados = new Set((p.projeto_acessos || []).map((a) => a.usuario_id));
+    return '<div class="lista-acessos">' + clientes.map((c) => `
+      <label class="acesso${c.ativo ? "" : " inativo"}">
+        <input type="checkbox" data-acao="acesso" data-projeto="${p.id}" data-usuario="${c.id}"${liberados.has(c.id) ? " checked" : ""}>
+        <span><strong>${escapar(c.nome || c.email)}</strong> <small>${escapar(c.email)}${c.ativo ? "" : " · inativo"}</small></span>
+      </label>`).join("") + "</div>";
+  }
+
+  function desenharPaginas(p) {
+    const paginas = (p.paginas || []).sort((a, b) => a.ordem - b.ordem);
+    if (!paginas.length) return '<p class="campo-dica">Nenhuma página ainda.</p>';
+    return `<div class="tabela-wrap tabela-interna"><table class="tabela"><thead><tr>
+        <th>Página</th><th>Visível ao cliente</th><th>Atualizada</th><th></th></tr></thead><tbody>` +
+      paginas.map((pg) => `
+        <tr>
+          <td><div class="nome">${escapar(pg.titulo)}</div><div class="email">${TIPOS[pg.tipo] || pg.tipo}</div></td>
+          <td><label class="interruptor"><input type="checkbox" data-acao="visivel" data-pagina="${pg.id}"${pg.visivel_cliente ? " checked" : ""}> ${pg.visivel_cliente ? "Sim" : "Não (rascunho)"}</label></td>
+          <td class="data">${formatarData(pg.atualizado_em)}</td>
+          <td class="acoes">
+            <a class="btn btn-primary btn-pequeno" href="pagina.html?id=${pg.id}">Abrir / editar</a>
+            <a class="btn btn-ghost btn-pequeno" href="pagina.html?id=${pg.id}&modo=cliente">Ver como cliente</a>
+            <label class="btn btn-ghost btn-pequeno" title="Envia uma nova versão do arquivo HTML. Os dados editados são mantidos.">
+              Trocar HTML<input type="file" accept=".html,.htm" hidden data-acao="trocar-html" data-pagina="${pg.id}">
+            </label>
+            <button class="btn btn-perigo btn-pequeno" data-acao="excluir-pagina" data-pagina="${pg.id}">Excluir</button>
+          </td>
+        </tr>`).join("") + "</tbody></table></div>";
+  }
+
+  function desenhar() {
+    if (!projetos.length) {
+      lista.innerHTML = '<div class="card vazio" style="margin-top:24px">Nenhum projeto ainda. Crie o primeiro acima.</div>';
+      return;
+    }
+    lista.innerHTML = projetos.map((p) => `
+      <section class="card projeto-admin" style="margin-top:24px">
+        <div class="projeto-topo">
+          <div>
+            <h2>${escapar(p.nome)}</h2>
+            <p class="campo-dica">${p.descricao ? escapar(p.descricao) : "Sem descrição"} · criado em ${formatarData(p.criado_em)}</p>
+          </div>
+          <div class="projeto-topo-acoes">
+            <select data-acao="status" data-projeto="${p.id}" aria-label="Status do projeto">${opcoes(STATUS, p.status)}</select>
+            <button class="btn btn-perigo btn-pequeno" data-acao="excluir-projeto" data-projeto="${p.id}">Excluir projeto</button>
+          </div>
+        </div>
+
+        <h3>Quem pode ver este projeto</h3>
+        ${desenharAcessos(p)}
+
+        <h3 style="margin-top:22px">Páginas</h3>
+        ${desenharPaginas(p)}
+
+        <form class="nova-pagina" data-projeto="${p.id}" novalidate>
+          <div class="campo"><label>Título da página</label><input type="text" name="titulo" placeholder="Ex.: Proposal, Schedule & Costs" required></div>
+          <div class="campo"><label>Tipo</label><select name="tipo">${opcoes(TIPOS, "proposta")}</select></div>
+          <div class="campo"><label>Arquivo HTML</label><input type="file" name="arquivo" accept=".html,.htm" required></div>
+          <button type="submit" class="btn btn-ghost">Adicionar página</button>
+        </form>
+      </section>`).join("");
+  }
+
+  /* ------------------------------ Ações ------------------------------ */
+  async function executar(acao, mensagemOk) {
+    aviso(avisoGeral, "");
+    const { error } = await acao();
+    if (error) {
+      aviso(avisoGeral, "Erro: " + error.message);
+      await carregar();
+      return false;
+    }
+    if (mensagemOk) aviso(avisoGeral, mensagemOk, "ok");
+    await carregar();
+    return true;
+  }
+
+  // Lê o arquivo HTML escolhido no computador.
+  async function lerArquivo(arquivo) {
+    if (!arquivo) throw new Error("Escolha um arquivo HTML.");
+    if (arquivo.size > 5 * 1024 * 1024) throw new Error("Arquivo grande demais (máximo 5 MB).");
+    return await arquivo.text();
+  }
+
+  lista.addEventListener("change", async (evento) => {
+    const alvo = evento.target;
+    const acao = alvo.dataset.acao;
+
+    if (acao === "acesso") {
+      const projeto_id = alvo.dataset.projeto, usuario_id = alvo.dataset.usuario;
+      await executar(
+        () => alvo.checked
+          ? sb.from("projeto_acessos").insert({ projeto_id, usuario_id })
+          : sb.from("projeto_acessos").delete().match({ projeto_id, usuario_id }),
+        alvo.checked ? "Acesso liberado." : "Acesso removido."
+      );
+    }
+
+    if (acao === "status") {
+      await executar(() => sb.from("projetos").update({ status: alvo.value }).eq("id", alvo.dataset.projeto), "Status atualizado.");
+    }
+
+    if (acao === "visivel") {
+      await executar(
+        () => sb.from("paginas").update({ visivel_cliente: alvo.checked }).eq("id", alvo.dataset.pagina),
+        alvo.checked ? "Página visível para o cliente." : "Página escondida do cliente (rascunho)."
+      );
+    }
+
+    if (acao === "trocar-html") {
+      try {
+        const html = await lerArquivo(alvo.files[0]);
+        if (!confirm("Substituir o HTML desta página pelo arquivo escolhido?\n\nOs dados que você editou na página são mantidos. A versão anterior fica no histórico.")) return;
+        await executar(() => sb.from("paginas").update({ html }).eq("id", alvo.dataset.pagina), "HTML da página atualizado.");
+      } catch (erro) {
+        aviso(avisoGeral, erro.message);
+      } finally {
+        alvo.value = "";
+      }
+    }
+  });
+
+  lista.addEventListener("click", async (evento) => {
+    const botao = evento.target.closest("button[data-acao]");
+    if (!botao) return;
+
+    if (botao.dataset.acao === "excluir-pagina") {
+      if (!confirm("Excluir esta página? Os dados e o histórico dela também serão apagados. Esta ação não pode ser desfeita.")) return;
+      await executar(() => sb.from("paginas").delete().eq("id", botao.dataset.pagina), "Página excluída.");
+    }
+
+    if (botao.dataset.acao === "excluir-projeto") {
+      const p = projetos.find((x) => x.id === botao.dataset.projeto);
+      const digitado = prompt(`Excluir o projeto "${p.nome}" com todas as páginas e o histórico?\nEsta ação não pode ser desfeita.\n\nDigite o nome do projeto para confirmar:`);
+      if (digitado === null) return;
+      if (digitado.trim() !== p.nome) { aviso(avisoGeral, "O nome digitado não confere. Nada foi excluído."); return; }
+      await executar(() => sb.from("projetos").delete().eq("id", p.id), "Projeto excluído.");
+    }
+  });
+
+  lista.addEventListener("submit", async (evento) => {
+    const form = evento.target.closest("form.nova-pagina");
+    if (!form) return;
+    evento.preventDefault();
+    const projeto_id = form.dataset.projeto;
+    const titulo = form.titulo.value.trim();
+    const tipo = form.tipo.value;
+    const botao = form.querySelector("button[type=submit]");
+
+    try {
+      if (!titulo) throw new Error("Informe o título da página.");
+      const html = await lerArquivo(form.arquivo.files[0]);
+      const projeto = projetos.find((x) => x.id === projeto_id);
+      const ordem = Math.max(0, ...(projeto.paginas || []).map((pg) => pg.ordem)) + 1;
+      await comBotaoOcupado(botao, "Enviando…", () =>
+        executar(() => sb.from("paginas").insert({ projeto_id, titulo, tipo, html, ordem }), `Página "${titulo}" adicionada.`)
+      );
+    } catch (erro) {
+      aviso(avisoGeral, erro.message);
+    }
+  });
+
+  /* ------------------------------ Novo projeto ------------------------------ */
+  document.getElementById("formProjeto").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    const avisoNovo = document.getElementById("avisoNovo");
+    const nome = document.getElementById("projNome").value.trim();
+    const descricao = document.getElementById("projDescricao").value.trim() || null;
+    const status = document.getElementById("projStatus").value;
+    if (!nome) { aviso(avisoNovo, "Informe o nome do projeto."); return; }
+
+    await comBotaoOcupado(document.getElementById("botaoCriarProjeto"), "Criando…", async () => {
+      const { error } = await sb.from("projetos").insert({ nome, descricao, status });
+      if (error) { aviso(avisoNovo, "Erro: " + error.message); return; }
+      aviso(avisoNovo, `Projeto "${nome}" criado. Agora libere o acesso e adicione as páginas abaixo.`, "ok");
+      evento.target.reset();
+      document.getElementById("projStatus").value = "em_andamento";
+      await carregar();
+    });
+  });
+
+  carregar();
+})();
+</script>
+</body>
+</html>

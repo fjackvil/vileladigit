@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project | Vilela Digit</title>
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%232E6E6A%22/><text x=%2250%22 y=%2266%22 font-size=%2258%22 font-family=%22Arial%22 fill=%22white%22 text-anchor=%22middle%22>V</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/area.css">
+<style>
+  /* A página ocupa a tela inteira, abaixo da barra superior */
+  body{ display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+  .barra-pagina{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    padding: 10px clamp(16px, 3vw, 32px); border-bottom:1px solid var(--border); background: var(--surface);
+  }
+  .barra-pagina .titulo{ flex:1; min-width:0; }
+  .barra-pagina .titulo strong{ font-family: var(--font-display); font-size:1rem; color: var(--text); }
+  .barra-pagina .titulo span{ display:block; font-size:.78rem; color: var(--text-soft); }
+  .barra-pagina .modo{ font-family: var(--font-mono); font-size:.72rem; padding:4px 10px; border-radius:999px; }
+  .modo-edicao{ background: var(--accent-2-soft); color: var(--accent-2); }
+  .modo-leitura{ background: var(--accent-soft); color: var(--accent); }
+  main.quadro{ flex:1; min-height:0; }
+  main.quadro iframe{ width:100%; height:100%; border:0; display:block; background:#fff; }
+  .erro-pagina{ max-width:520px; margin:60px auto; }
+</style>
+</head>
+<body class="carregando">
+
+<div class="barra-pagina">
+  <a href="area-cliente.html" class="pill-btn" id="voltar">← My projects</a>
+  <div class="titulo"><strong id="tituloPagina">Loading…</strong><span id="nomeProjeto"></span></div>
+  <span id="selosModo"></span>
+  <a href="#" class="pill-btn" id="trocarModo" hidden></a>
+  <button id="themeToggle" class="pill-btn icon-btn" aria-label="Toggle light/dark theme" title="Light / dark mode">
+    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+  </button>
+  <button id="botaoSair" class="pill-btn">Sign out</button>
+</div>
+
+<main class="quadro" id="quadro"></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/area-comum.js"></script>
+<script>
+/* ==========================================================================
+   VISUALIZADOR DE PÁGINAS DE PROJETO
+
+   Como funciona:
+   1. Busca no banco a página (o HTML e os dados salvos em "estado").
+   2. Mostra o HTML dentro de um quadro ISOLADO (iframe com sandbox):
+      a página não consegue ler o login de quem está vendo.
+   3. Coloca dentro do quadro um pequeno "conector" (CONECTOR abaixo) que
+      imita o banco usado pelas páginas feitas como Artifact do Claude
+      (window.claude.use("db")). Assim a página salva e carrega os dados
+      no Supabase sem precisar ser reescrita.
+   4. Admin: pode editar (as alterações são gravadas no banco).
+      Cliente: só leitura — os botões de admin ficam escondidos e,
+      mesmo que alguém tente gravar, o banco recusa (regras RLS).
+   ========================================================================== */
+(async function () {
+  "use strict";
+  const { sb, exigirAcesso, escapar } = window.Area;
+
+  const perfil = await exigirAcesso();
+  if (!perfil) return;
+
+  const parametros = new URLSearchParams(location.search);
+  const paginaId = parametros.get("id");
+  const ehAdmin = perfil.papel === "admin";
+  // O admin pode ver a página exatamente como o cliente vê (?modo=cliente).
+  const podeEditar = ehAdmin && parametros.get("modo") !== "cliente";
+  const quadro = document.getElementById("quadro");
+
+  function mostrarErro(texto) {
+    document.getElementById("tituloPagina").textContent = "Page not available";
+    quadro.innerHTML = `<div class="card erro-pagina"><p>${escapar(texto)}</p><a class="btn btn-primary" href="area-cliente.html">Back to my projects</a></div>`;
+  }
+
+  if (!paginaId) { mostrarErro("No page was selected."); return; }
+
+  // O banco só devolve a página se a pessoa tiver acesso ao projeto (RLS).
+  const { data: pagina, error } = await sb
+    .from("paginas")
+    .select("id, titulo, html, estado, visivel_cliente, projetos(nome)")
+    .eq("id", paginaId)
+    .maybeSingle();
+
+  if (error || !pagina) {
+    mostrarErro("This page does not exist or you do not have access to it.");
+    return;
+  }
+
+  document.title = `${pagina.titulo} | Vilela Digit`;
+  document.getElementById("tituloPagina").textContent = pagina.titulo;
+  document.getElementById("nomeProjeto").textContent = pagina.projetos ? pagina.projetos.nome : "";
+
+  if (ehAdmin) {
+    document.getElementById("voltar").href = "admin-projetos.html";
+    document.getElementById("voltar").textContent = "← Projetos";
+    document.getElementById("selosModo").innerHTML = podeEditar
+      ? '<span class="modo modo-edicao" title="As alterações ficam salvas e o cliente vê a versão atualizada">Modo edição</span>'
+      : '<span class="modo modo-leitura">Visão do cliente</span>';
+    const trocar = document.getElementById("trocarModo");
+    trocar.hidden = false;
+    trocar.textContent = podeEditar ? "Ver como cliente" : "Voltar a editar";
+    trocar.href = `pagina.html?id=${pagina.id}${podeEditar ? "&modo=cliente" : ""}`;
+  }
+
+  /* ---------------------- Conector colocado dentro da página ---------------------- */
+  // Este código roda DENTRO do quadro isolado. Ele:
+  //  - cria um armazenamento em memória (o quadro isolado não tem localStorage);
+  //  - cria window.claude.use("db"), que repassa leituras/gravações para esta tela.
+  const CONECTOR = `
+(function(){
+  function memoria(){
+    var dados = {};
+    return {
+      getItem: function(k){ return Object.prototype.hasOwnProperty.call(dados, k) ? dados[k] : null; },
+      setItem: function(k, v){ dados[k] = String(v); },
+      removeItem: function(k){ delete dados[k]; },
+      clear: function(){ dados = {}; },
+      key: function(i){ return Object.keys(dados)[i] || null; },
+      get length(){ return Object.keys(dados).length; }
+    };
+  }
+  ["localStorage", "sessionStorage"].forEach(function(nome){
+    try { window[nome].getItem("teste"); }
+    catch (e) { try { Object.defineProperty(window, nome, { value: memoria(), configurable: true }); } catch (e2) {} }
+  });
+
+  var sequencia = 0, pendentes = {};
+  function pedir(msg){
+    return new Promise(function(resolver, rejeitar){
+      var id = ++sequencia;
+      pendentes[id] = { resolver: resolver, rejeitar: rejeitar };
+      msg.tipo = "vd-db"; msg.id = id;
+      parent.postMessage(msg, "*");
+    });
+  }
+  window.addEventListener("message", function(ev){
+    if (ev.source !== parent) return;
+    var d = ev.data || {};
+    if (d.tipo !== "vd-db-resposta" || !pendentes[d.id]) return;
+    var p = pendentes[d.id]; delete pendentes[d.id];
+    if (d.ok) { p.resolver(d.valor); return; }
+    var erro = new Error((d.erro && d.erro.message) || "erro");
+    erro.code = d.erro && d.erro.code;
+    p.rejeitar(erro);
+  });
+  function retrato(valor){
+    return { exists: valor != null, data: function(){ return valor; }, metadata: { hasPendingWrites: false } };
+  }
+  var banco = {
+    doc: function(caminho){
+      return {
+        get: function(){ return pedir({ op: "get", caminho: caminho }).then(retrato); },
+        set: function(valor){ return pedir({ op: "set", caminho: caminho, valor: valor }); },
+        onSnapshot: function(){ return function(){}; }
+      };
+    }
+  };
+  window.claude = { use: function(nome){ return Promise.resolve(nome === "db" ? banco : null); } };
+
+  // Links internos (ex.: href="#timeline"): rola até a seção, em vez de tentar
+  // abrir outro endereço (o que deixaria o quadro em branco).
+  window.addEventListener("click", function(ev){
+    if (ev.defaultPrevented) return;
+    var link = ev.target.closest && ev.target.closest("a[href^='#']");
+    if (!link) return;
+    ev.preventDefault();
+    var alvo = decodeURIComponent(link.getAttribute("href").slice(1));
+    var elemento = alvo ? (document.getElementById(alvo) || document.getElementsByName(alvo)[0]) : document.body;
+    if (elemento) elemento.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+})();`;
+
+  // No modo leitura, esconde os controles de admin que a própria página já marca.
+  const ESCONDER_ADMIN = `<style>.admin-only,#admin,#adminBtn,#trackBtn,#trackView,#cloudSt{display:none!important}</style>`;
+
+  function montarDocumento(html) {
+    const injetar = `<script>${CONECTOR}<\/script>${podeEditar ? "" : ESCONDER_ADMIN}`;
+    const posicaoHead = html.search(/<head[^>]*>/i);
+    if (posicaoHead >= 0) {
+      const fimHead = html.indexOf(">", posicaoHead) + 1;
+      return html.slice(0, fimHead) + injetar + html.slice(fimHead);
+    }
+    return injetar + html;
+  }
+
+  /* ---------------------- Leituras e gravações pedidas pela página ---------------------- */
+  // "estado" guarda um objeto { caminho: valor }, ex.: { "proposta/config": {...} }.
+  let estado = pagina.estado || {};
+  const iframe = document.createElement("iframe");
+  iframe.title = pagina.titulo;
+  // allow-scripts SEM allow-same-origin = página isolada, sem acesso ao login.
+  iframe.setAttribute("sandbox", "allow-scripts allow-modals allow-downloads allow-popups allow-popups-to-escape-sandbox allow-forms");
+
+  window.addEventListener("message", async (ev) => {
+    if (ev.source !== iframe.contentWindow) return;
+    const pedido = ev.data || {};
+    if (pedido.tipo !== "vd-db") return;
+
+    const responder = (ok, valor, erro) =>
+      iframe.contentWindow.postMessage({ tipo: "vd-db-resposta", id: pedido.id, ok, valor: valor ?? null, erro }, "*");
+
+    if (pedido.op === "get") {
+      responder(true, estado[pedido.caminho] ?? null);
+      return;
+    }
+
+    if (pedido.op === "set") {
+      if (!podeEditar) {
+        responder(false, null, { code: "invalid_argument", message: "read-only" });
+        return;
+      }
+      // As páginas guardam cópias diárias em "backups/..."; não é preciso:
+      // o banco já grava o histórico de versões automaticamente.
+      if (String(pedido.caminho).startsWith("backups/")) {
+        responder(true);
+        return;
+      }
+      const novoEstado = { ...estado, [pedido.caminho]: pedido.valor };
+      const { error: erroGravar } = await sb.from("paginas").update({ estado: novoEstado }).eq("id", pagina.id);
+      if (erroGravar) {
+        responder(false, null, { code: "erro", message: erroGravar.message });
+        return;
+      }
+      estado = novoEstado;
+      responder(true);
+    }
+  });
+
+  iframe.srcdoc = montarDocumento(pagina.html || "<p style='font-family:sans-serif;padding:40px'>Empty page.</p>");
+  quadro.appendChild(iframe);
+})();
+</script>
+</body>
+</html>

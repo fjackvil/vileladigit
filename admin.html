@@ -33,6 +33,12 @@
 <main class="area-main">
   <div class="container area-wrap">
 
+    <nav class="abas">
+      <a href="admin.html" class="ativa">Usuários</a>
+      <a href="admin-projetos.html">Projetos</a>
+      <a href="area-cliente.html">Ver área do cliente</a>
+    </nav>
+
     <div class="area-titulo">
       <span class="eyebrow">Painel Admin</span>
       <h1>Usuários</h1>
@@ -69,7 +75,7 @@
 
       <!-- Aparece depois de cadastrar, para copiar e enviar ao cliente -->
       <div id="credenciais" class="credenciais" hidden>
-        <p><strong>Dados de acesso para enviar ao cliente:</strong></p>
+        <p><strong>Dados de acesso para enviar ao cliente (em inglês):</strong></p>
         <p id="credenciaisTexto" style="white-space:pre-line"></p>
         <button type="button" id="copiarCredenciais" class="btn btn-ghost btn-pequeno">Copiar</button>
         <p class="campo-dica" style="margin-top:10px">Esta senha não fica guardada em lugar nenhum. Copie agora.</p>
@@ -111,7 +117,8 @@
 <script>
 (async function () {
   "use strict";
-  const { sb, exigirAcesso, chamarAdmin, aviso, escapar, gerarSenha, formatarData, comBotaoOcupado } = window.Area;
+  const { sb, exigirAcesso, chamarAdmin, definirIdioma, aviso, escapar, gerarSenha, formatarData, comBotaoOcupado } = window.Area;
+  definirIdioma("pt");
 
   const perfil = await exigirAcesso({ papel: "admin" });
   if (!perfil) return;
@@ -208,8 +215,9 @@
 
   function mostrarCredenciais(email, senha) {
     const endereco = location.origin + location.pathname.replace(/[^/]*$/, "") + "login.html";
+    // Em inglês, porque é o texto enviado ao cliente.
     document.getElementById("credenciaisTexto").textContent =
-      `Endereço: ${endereco}\nE-mail: ${email}\nSenha provisória: ${senha}`;
+      `Client area: ${endereco}\nE-mail: ${email}\nTemporary password: ${senha}\n(You will be asked to choose a new password on your first sign-in.)`;
     document.getElementById("credenciais").hidden = false;
     document.getElementById("credenciais").scrollIntoView({ behavior: "smooth", block: "center" });
   }

@@ -97,7 +97,7 @@
     const nome = document.getElementById("usuarioNome");
     const papel = document.getElementById("usuarioPapel");
     if (nome) nome.textContent = perfil.nome || perfil.email;
-    if (papel) papel.textContent = perfil.papel === "admin" ? "Admin" : "Cliente";
+    if (papel) papel.textContent = perfil.papel === "admin" ? "Admin" : (idioma === "pt" ? "Cliente" : "Client");
   }
 
   async function sair() {
@@ -123,18 +123,28 @@
 
   /* ------------------------------ Utilidades ------------------------------ */
 
-  // Traduz as mensagens de erro mais comuns do Supabase.
+  // Idioma das mensagens: as telas do cliente usam inglês ("en");
+  // o painel admin muda para português com Area.definirIdioma("pt").
+  let idioma = "en";
+  function definirIdioma(novo) { idioma = novo; }
+
+  // Mensagens de erro mais comuns do Supabase, em inglês e português.
+  const ERROS = [
+    [/invalid login credentials/i, "Incorrect e-mail or password.", "E-mail ou senha incorretos."],
+    [/banned/i, "Your access is inactive. Please contact the administrator.", "Seu acesso está inativo. Fale com o administrador."],
+    [/email not confirmed/i, "E-mail not confirmed yet. Please contact the administrator.", "E-mail ainda não confirmado. Fale com o administrador."],
+    [/should be different/i, "The new password must be different from the current one.", "A nova senha precisa ser diferente da senha atual."],
+    [/at least \d+ characters|password should be/i, "Password too weak or too short. Use at least 8 characters.", "A senha é fraca ou curta demais. Use pelo menos 8 caracteres."],
+    [/already (been )?registered|already exists/i, "A user with this e-mail already exists.", "Já existe um usuário com este e-mail."],
+    [/rate limit|too many/i, "Too many attempts. Please wait a few minutes and try again.", "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo."],
+    [/failed to fetch|network/i, "No connection to the server. Check your internet.", "Sem conexão com o servidor. Verifique sua internet."],
+  ];
+
   function traduzirErro(msg) {
     const m = String(msg || "");
-    if (/invalid login credentials/i.test(m)) return "E-mail ou senha incorretos.";
-    if (/banned/i.test(m)) return "Seu acesso está inativo. Fale com o administrador.";
-    if (/email not confirmed/i.test(m)) return "E-mail ainda não confirmado. Fale com o administrador.";
-    if (/should be different/i.test(m)) return "A nova senha precisa ser diferente da senha atual.";
-    if (/at least \d+ characters|password should be/i.test(m)) return "A senha é fraca ou curta demais. Use pelo menos 8 caracteres.";
-    if (/already (been )?registered|already exists/i.test(m)) return "Já existe um usuário com este e-mail.";
-    if (/rate limit|too many/i.test(m)) return "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.";
-    if (/failed to fetch|network/i.test(m)) return "Sem conexão com o servidor. Verifique sua internet.";
-    return m;
+    const achado = ERROS.find(([padrao]) => padrao.test(m));
+    if (!achado) return m;
+    return idioma === "pt" ? achado[2] : achado[1];
   }
 
   // Mostra uma mensagem em um elemento .aviso (tipo: "erro", "ok" ou "info").
@@ -161,7 +171,7 @@
 
   function formatarData(valor) {
     if (!valor) return "—";
-    return new Date(valor).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+    return new Date(valor).toLocaleString(idioma === "pt" ? "pt-BR" : "en-GB", { dateStyle: "short", timeStyle: "short" });
   }
 
   // Desativa um botão enquanto uma ação está em andamento.
@@ -178,7 +188,7 @@
   }
 
   window.Area = {
-    sb, obterPerfil, destinoPorPerfil, exigirAcesso, sair, chamarAdmin,
+    sb, obterPerfil, destinoPorPerfil, exigirAcesso, sair, chamarAdmin, definirIdioma,
     traduzirErro, aviso, escapar, gerarSenha, formatarData, comBotaoOcupado,
   };
 })();
