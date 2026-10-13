@@ -25,7 +25,7 @@
 
   let temaSalvo = null;
   try { temaSalvo = localStorage.getItem("vieladigit-theme"); } catch (e) {}
-  aplicarTema(temaSalvo || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  aplicarTema(temaSalvo || "dark"); // padrão: tema escuro
 
   document.addEventListener("DOMContentLoaded", () => {
     const botaoTema = document.getElementById("themeToggle");

@@ -19,8 +19,7 @@
   }
 
   const savedTheme = localStorage.getItem("vieladigit-theme");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  applyTheme(savedTheme || (prefersDark ? "dark" : "light"));
+  applyTheme(savedTheme || "dark"); // padrão: tema escuro
 
   themeToggle.addEventListener("click", () => {
     const current = root.getAttribute("data-theme");
@@ -53,7 +52,7 @@
   }
 
   langToggle.addEventListener("click", () => {
-    const current = localStorage.getItem("vieladigit-lang") || "pt";
+    const current = localStorage.getItem("vieladigit-lang") || "en";
     applyLanguage(current === "pt" ? "en" : "pt");
   });
 
@@ -114,7 +113,7 @@
     portfolioGrid.querySelectorAll(".portfolio-open-btn, .portfolio-card-thumb").forEach((btn) => {
       btn.addEventListener("click", () => {
         const item = portfolioItems[parseInt(btn.getAttribute("data-index"), 10)];
-        const lang = localStorage.getItem("vieladigit-lang") || "pt";
+        const lang = localStorage.getItem("vieladigit-lang") || "en";
         const title = lang === "en" && item.titleEn ? item.titleEn : item.title;
         openPortfolioModal(title, item.embedUrl);
       });
@@ -171,6 +170,6 @@
   document.getElementById("year").textContent = new Date().getFullYear();
 
   /* --------------------------- Aplicar idioma inicial --------------------------- */
-  const savedLang = localStorage.getItem("vieladigit-lang") || "pt";
+  const savedLang = localStorage.getItem("vieladigit-lang") || "en";
   applyLanguage(savedLang);
 })();
