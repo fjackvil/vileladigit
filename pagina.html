@@ -197,7 +197,7 @@
   const ESCONDER_ADMIN = `<style>.admin-only,#admin,#adminBtn,#trackBtn,#trackView,#cloudSt{display:none!important}</style>`;
 
   // Coloca os dados do projeto no início do modelo (window.__DADOS__).
-  // O replace de "<" impede que um texto com "</script>" quebre a página.
+  // O replace de "<" impede que um texto com a tag de fechamento de script quebre a página.
   function injetarDados(html, dados) {
     const script = `<script>window.__DADOS__=${JSON.stringify(dados).replace(/</g, "\\u003c")};<\/script>`;
     const posicaoHead = html.search(/<head[^>]*>/i);
