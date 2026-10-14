@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor | Painel Admin | Vilela Digit</title>
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%232E6E6A%22/><text x=%2250%22 y=%2266%22 font-size=%2258%22 font-family=%22Arial%22 fill=%22white%22 text-anchor=%22middle%22>V</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/area.css">
+</head>
+<body class="carregando pagina-editor">
+
+<header class="site-header area-header">
+  <div class="container header-inner">
+    <a href="admin-projetos.html" class="logo">Vilela<span>Digit</span></a>
+    <div class="header-controls">
+      <span class="area-user"><span class="area-user-nome"><strong id="usuarioNome"></strong></span><span class="area-papel" id="usuarioPapel"></span></span>
+      <button id="themeToggle" class="pill-btn icon-btn" aria-label="Alternar tema claro/escuro" title="Modo claro / escuro">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+      </button>
+      <button id="botaoSair" class="pill-btn">Sair</button>
+    </div>
+  </div>
+</header>
+
+<main class="area-main editor-main">
+  <div class="editor-topo">
+    <a href="admin-projetos.html" class="pill-btn">← Projetos</a>
+    <div class="editor-titulo"><strong id="tituloPagina">Carregando…</strong><span id="nomeProjeto"></span></div>
+    <span id="statusSalvo" class="selo selo-ativo">Salvo</span>
+    <a id="linkVer" class="btn btn-ghost btn-pequeno" target="_blank" rel="noopener">Abrir como o cliente vê ↗</a>
+    <label class="btn btn-ghost btn-pequeno" title="Substitui todos os dados por um arquivo JSON">Importar JSON<input type="file" id="importar" accept=".json" hidden></label>
+    <button id="exportar" class="btn btn-ghost btn-pequeno" title="Baixa todos os dados num arquivo JSON (backup)">Exportar JSON</button>
+    <button id="salvar" class="btn btn-primary btn-pequeno">Salvar</button>
+  </div>
+  <div id="avisoEditor" class="aviso" role="alert" style="margin:12px 24px 0"></div>
+
+  <div class="editor-grade">
+    <section class="editor-form">
+      <nav class="abas" id="abas"></nav>
+      <div id="formulario"></div>
+    </section>
+    <section class="editor-previa">
+      <div class="previa-barra"><span>Pré-visualização (atualiza enquanto você digita)</span><button id="recarregarPrevia" class="link-discreto">Recarregar</button></div>
+      <iframe id="previa" title="Pré-visualização" sandbox="allow-scripts allow-modals"></iframe>
+    </section>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/area-comum.js"></script>
+<script>
+/* ==========================================================================
+   EDITOR DE DADOS DE UMA PÁGINA FEITA PELO MODELO (ex.: proposta)
+
+   - Os dados ficam no objeto D, que é gravado na coluna paginas.estado.
+   - Cada campo do formulário tem data-p = caminho dentro de D
+     (ex.: ["textos","capa.titulo","en"]). Ao digitar, o valor vai para D
+     e a pré-visualização é atualizada (sem salvar).
+   - "Salvar" grava no banco; só então o cliente vê a mudança.
+   ========================================================================== */
+(async function () {
+  "use strict";
+  const { sb, exigirAcesso, definirIdioma, aviso, escapar } = window.Area;
+  definirIdioma("pt");
+
+  const perfil = await exigirAcesso({ papel: "admin" });
+  if (!perfil) return;
+
+  const avisoEditor = document.getElementById("avisoEditor");
+  const formulario = document.getElementById("formulario");
+  const previa = document.getElementById("previa");
+  const paginaId = new URLSearchParams(location.search).get("id");
+
+  /* ------------------------------ Catálogos ------------------------------ */
+  const IDIOMAS = { en: "Inglês", it: "Italiano", pt: "Português" };
+  const CORES = ["--p1", "--p2", "--p3", "--p4", "--p5", "--p6", "--p7"];
+  // Mesmas cores do modelo (modelos/proposta.html), para mostrar no editor
+  const COR_HEX = { "--p1": "#2a78d6", "--p2": "#eb6834", "--p3": "#1baf7a", "--p4": "#4a3aa7", "--p5": "#e87ba4", "--p6": "#008300", "--p7": "#eda100" };
+  const DIAS = [[1, "Seg"], [2, "Ter"], [3, "Qua"], [4, "Qui"], [5, "Sex"], [6, "Sáb"], [0, "Dom"]];
+  const SECOES = [
+    ["capa", "Capa"], ["contexto", "Contexto"], ["solucao", "Solução"], ["escopo", "Escopo e esforço"],
+    ["cronograma", "Cronograma"], ["marcos", "Marcos"], ["treinamento", "Treinamento"], ["investimento", "Investimento"],
+    ["faturamento", "Faturamento"], ["modelos_faturamento", "Modelos e regras de faturamento"], ["manutencao", "Manutenção mensal"],
+    ["prerequisitos", "Pré-requisitos"], ["proximos", "Próximos passos"],
+  ];
+  // Textos e listas de cada seção (chave em D.textos / D.listas, rótulo, tipo)
+  const TEXTOS_SECAO = {
+    capa: { textos: [["capa.kicker", "Linha acima do título"], ["capa.titulo", "Título"], ["capa.subtitulo", "Subtítulo", true]] },
+    contexto: {
+      textos: [["contexto.titulo", "Texto principal", true], ["contexto.lead", "Texto de apoio", true], ["contexto.problemas_titulo", "Título do quadro da esquerda"], ["contexto.ganhos_titulo", "Título do quadro da direita"]],
+      listas: [["contexto.indicadores", "Cartões de números", "indicador"], ["contexto.problemas", "Itens do quadro da esquerda", "texto"], ["contexto.ganhos", "Itens do quadro da direita", "texto"]],
+    },
+    solucao: {
+      textos: [["solucao.titulo", "Título", true], ["solucao.lead", "Texto de apoio", true]],
+      listas: [["solucao.fluxo", "Etapas do fluxo (numeradas)", "titulo_texto"], ["solucao.blocos", "Quadros com listas", "bloco"]],
+    },
+    escopo: { textos: [["escopo.lead", "Texto de apoio", true]] },
+    cronograma: { textos: [["cronograma.titulo", "Título", true], ["cronograma.lead", "Texto de apoio", true]] },
+    marcos: { textos: [["marcos.titulo", "Título", true], ["marcos.lead", "Texto de apoio", true]], nota: "As entregas de cada fase são editadas na aba Cronograma e custos." },
+    treinamento: { textos: [["treinamento.titulo", "Título", true], ["treinamento.lead", "Texto de apoio", true]], listas: [["treinamento.passos", "Quadros", "titulo_texto"]] },
+    investimento: { textos: [["investimento.titulo", "Título", true], ["investimento.lead", "Texto de apoio", true], ["investimento.nota_valor", "Nota abaixo do valor"], ["investimento.insight", "Quadro de destaque", true]] },
+    faturamento: { textos: [["faturamento.titulo", "Título", true]] },
+    modelos_faturamento: {
+      textos: [["fat.titulo_marco", "Título (quando o faturamento é por marco)", true], ["fat.titulo_mensal", "Título (quando o faturamento é mensal)", true],
+        ["fat.a_titulo", "Opção A · título"], ["fat.a_texto", "Opção A · texto", true], ["fat.a_pro", "Opção A · vantagem"],
+        ["fat.b_titulo", "Opção B · título"], ["fat.b_texto", "Opção B · texto", true], ["fat.b_pro", "Opção B · vantagem"],
+        ["fat.c_titulo", "Opção C · título"], ["fat.c_texto", "Opção C · texto", true], ["fat.c_pro", "Opção C · vantagem"]],
+      listas: [["faturamento.regras", "Regras de faturamento", "texto"]],
+    },
+    manutencao: { textos: [["manutencao.titulo", "Título", true], ["manutencao.lead", "Texto de apoio", true]], listas: [["manutencao.inclui", "O que está incluso", "texto"], ["manutencao.condicoes", "Condições", "texto"]] },
+    prerequisitos: { textos: [["prerequisitos.titulo", "Título", true], ["prerequisitos.lead", "Texto de apoio", true], ["prerequisitos.insight", "Quadro de destaque", true]], listas: [["prerequisitos.itens", "Itens", "prereq"]] },
+    proximos: { textos: [["proximos.titulo", "Título", true], ["proximos.lead", "Texto de apoio", true]], listas: [["proximos.passos", "Passos (numerados)", "texto"]] },
+  };
+  const VARIAVEIS = [
+    ["cliente", "sigla do cliente"], ["inicio", "data de início"], ["fim", "data de término"], ["golive", "data do go-live"],
+    ["marco_parcial", "data do marco parcial"], ["semanas", "duração em semanas"], ["horas_total", "total de horas"], ["investimento", "valor total (€)"],
+    ["valor_semana", "valor por semana"], ["valor_hora", "valor hora"], ["fases", "nº de fases"], ["sinal", "% do sinal"], ["meses", "nº de meses"],
+    ["relatorios", "nº de relatórios"], ["retrabalho", "% de retrabalho"], ["horas_dia", "horas por dia"], ["dias_semana", "dias por semana"],
+    ["horas_semana", "horas por semana"], ["horas_mes", "horas por mês"], ["treinamento_horas", "horas de treinamento"], ["progresso", "% concluído"],
+    ["manut_horas", "manutenção h/mês"], ["manut_valor", "manutenção €/mês"], ["manut_meses", "meses de manutenção"], ["inicio_manut", "início da manutenção"],
+    ["prazo_pagamento", "prazo de pagamento (dias)"], ["pacote_horas", "horas do pacote"], ["pacote_desconto", "% desconto do pacote"], ["pacote_valor", "valor do pacote"],
+  ];
+  const NOVO_ITEM = {
+    texto: () => ({}),
+    titulo_texto: () => ({ titulo: {}, texto: {} }),
+    indicador: () => ({ rotulo: {}, valor: "", detalhe: {} }),
+    prereq: () => ({ item: {}, detalhe: {}, responsavel: {} }),
+    bloco: () => ({ titulo: {}, itens: [] }),
+  };
+  const ABAS = [["geral", "Geral"], ["consultor", "Consultor"], ["cronograma", "Cronograma e custos"], ["andamento", "Andamento"], ["textos", "Textos"]];
+
+  /* ------------------------------ Carregar a página ------------------------------ */
+  if (!paginaId) { aviso(avisoEditor, "Nenhuma página informada."); document.body.classList.remove("carregando"); return; }
+
+  const { data: pagina, error } = await sb
+    .from("paginas").select("id, titulo, estado, modelo, projetos(nome)").eq("id", paginaId).maybeSingle();
+  if (error || !pagina) { aviso(avisoEditor, "Página não encontrada."); return; }
+  if (!pagina.modelo) { aviso(avisoEditor, "Esta página é um HTML enviado e não usa modelo. Ela não pode ser editada aqui."); return; }
+
+  document.title = `Editor · ${pagina.titulo} | Vilela Digit`;
+  document.getElementById("tituloPagina").textContent = pagina.titulo;
+  document.getElementById("nomeProjeto").textContent = pagina.projetos ? pagina.projetos.nome : "";
+  document.getElementById("linkVer").href = `pagina.html?id=${pagina.id}`;
+
+  let D = normalizar(pagina.estado);
+  let aba = "geral";
+  let sujo = false;
+
+  function normalizar(d) {
+    d = JSON.parse(JSON.stringify(d || {}));
+    d.idiomas = Array.isArray(d.idiomas) && d.idiomas.length ? d.idiomas : ["en"];
+    if (!d.idiomas.includes(d.idiomaPadrao)) d.idiomaPadrao = d.idiomas[0];
+    d.projeto = d.projeto || {}; d.cliente = d.cliente || {}; d.cliente.contatos = d.cliente.contatos || [];
+    d.consultor = d.consultor || {}; d.consultor.cargo = d.consultor.cargo || {}; d.consultor.local = d.consultor.local || {};
+    d.textos = d.textos || {}; d.listas = d.listas || {}; d.entregas = d.entregas || {};
+    d.config = d.config || {};
+    const c = d.config;
+    const padrao = { startDate: new Date().toISOString().slice(0, 10), hoursPerDay: 6, workDays: [1, 2, 3, 4, 5], pmHoursTotal: 0, rateEUR: 80, reworkPct: 15,
+      contingencyPct: 0, eurBrl: 5.6, billing: "milestone", reports: 10, depositPct: 15, maintHours: 16, maintMonths: 12, prazoPagamentoDias: 30,
+      pacoteHoras: 100, pacoteDesconto: 5, showTrack: false, mostrarAndamento: true, mostrarHorasGastas: false, secoesOcultas: [], marcoGoLive: null, marcoParcial: null };
+    for (const k in padrao) if (c[k] === undefined) c[k] = padrao[k];
+    if (!Array.isArray(c.phases) || !c.phases.length) c.phases = [{ id: "P1", prog: 0, c: "--p1", en: "Phase 1", pt: "Fase 1" }];
+    if (!Array.isArray(c.stages)) c.stages = [];
+    d.modelo = d.modelo || pagina.modelo;
+    d.versao = d.versao || 1;
+    return d;
+  }
+
+  /* ------------------------------ Ler / gravar dentro de D ------------------------------ */
+  const P = (caminho) => escapar(JSON.stringify(caminho));
+  function obter(caminho) { return caminho.reduce((o, k) => (o == null ? undefined : o[k]), D); }
+  function definir(caminho, valor) {
+    let o = D;
+    for (let i = 0; i < caminho.length - 1; i++) {
+      const k = caminho[i];
+      if (o[k] == null || typeof o[k] !== "object") o[k] = typeof caminho[i + 1] === "number" ? [] : {};
+      o = o[k];
+    }
+    o[caminho[caminho.length - 1]] = valor;
+  }
+  const v = (x) => escapar(x ?? "");
+
+  /* ------------------------------ Peças do formulário ------------------------------ */
+  function campo(caminho, rotulo, op = {}) {
+    const valor = obter(caminho);
+    const tipo = op.tipo || "text";
+    const extra = op.passo ? ` step="${op.passo}"` : "";
+    const entrada = tipo === "textarea"
+      ? `<textarea data-p="${P(caminho)}" rows="${op.linhas || 3}">${v(valor)}</textarea>`
+      : `<input type="${tipo === "num" ? "number" : tipo}"${extra} data-p="${P(caminho)}" data-tipo="${tipo}" value="${v(valor)}">`;
+    return `<label class="campo"><span>${rotulo}</span>${entrada}${op.dica ? `<small class="campo-dica">${op.dica}</small>` : ""}</label>`;
+  }
+  // Campo com um valor por idioma do projeto
+  function campoML(caminho, rotulo, multilinha) {
+    const linhas = D.idiomas.map((lg) => {
+      const c = [...caminho, lg], valor = obter(c);
+      const entrada = multilinha
+        ? `<textarea data-p="${P(c)}" rows="2">${v(valor)}</textarea>`
+        : `<input type="text" data-p="${P(c)}" value="${v(valor)}">`;
+      return `<div class="ml-linha"><span class="ml-idioma">${lg.toUpperCase()}</span>${entrada}</div>`;
+    }).join("");
+    return `<div class="campo campo-ml"><span>${rotulo}</span>${linhas}</div>`;
+  }
+  function caixa(caminho, rotulo, dica) {
+    return `<label class="caixa"><input type="checkbox" data-p="${P(caminho)}" data-tipo="bool"${obter(caminho) ? " checked" : ""}> <span>${rotulo}${dica ? `<small class="campo-dica">${dica}</small>` : ""}</span></label>`;
+  }
+  function controles(caminhoLista, i, total) {
+    return `<span class="item-controles">
+      <button type="button" class="ib" data-acao="subir" data-p="${P(caminhoLista)}" data-i="${i}" title="Subir"${i === 0 ? " disabled" : ""}>↑</button>
+      <button type="button" class="ib" data-acao="descer" data-p="${P(caminhoLista)}" data-i="${i}" title="Descer"${i === total - 1 ? " disabled" : ""}>↓</button>
+      <button type="button" class="ib ib-perigo" data-acao="remover" data-p="${P(caminhoLista)}" data-i="${i}" title="Remover">✕</button></span>`;
+  }
+  function nomeCurto(o) { return o ? (o.pt || o.en || o.it || "") : ""; }
+
+  /* ------------------------------ Abas ------------------------------ */
+  function abaGeral() {
+    const c = D.config;
+    return `
+    <div class="card">
+      <h2>Identificação</h2>
+      ${campo(["projeto", "barra"], "Título na barra superior da proposta", { dica: "Ex.: ISBU · Global KPI Platform" })}
+      ${campoML(["textos", "barra.subtitulo"], "Subtítulo da barra (opcional — padrão: “Development proposal”)")}
+      <div class="form-grid">${campo(["cliente", "nome"], "Nome do cliente", { dica: "Aparece na capa e nos contatos" })}${campo(["cliente", "sigla"], "Sigla do cliente", { dica: "Usada na variável {cliente}" })}</div>
+    </div>
+    <div class="card">
+      <h2>Idiomas da proposta</h2>
+      <p class="campo-dica">O cliente pode alternar entre os idiomas marcados. O editor só pede os textos desses idiomas.</p>
+      <div class="linha-caixas">${Object.entries(IDIOMAS).map(([lg, nome]) => `<label class="caixa"><input type="checkbox" data-acao-marcar="idioma" value="${lg}"${D.idiomas.includes(lg) ? " checked" : ""}> ${nome}</label>`).join("")}</div>
+      <label class="campo" style="max-width:260px"><span>Idioma em que a proposta abre</span><select data-p="${P(["idiomaPadrao"])}">${D.idiomas.map((lg) => `<option value="${lg}"${lg === D.idiomaPadrao ? " selected" : ""}>${IDIOMAS[lg]}</option>`).join("")}</select></label>
+    </div>
+    <div class="card">
+      <h2>Contatos do cliente</h2>
+      ${D.cliente.contatos.map((ct, i) => `<div class="item-lista"><div class="form-grid form-grid-2">${campo(["cliente", "contatos", i, "nome"], "Nome")}${campo(["cliente", "contatos", i, "email"], "E-mail", { tipo: "email" })}</div>${controles(["cliente", "contatos"], i, D.cliente.contatos.length)}</div>`).join("") || '<p class="campo-dica">Nenhum contato.</p>'}
+      <button type="button" class="btn btn-ghost btn-pequeno" data-acao="adicionar" data-p="${P(["cliente", "contatos"])}" data-modelo="contato">+ Contato</button>
+    </div>
+    <div class="card">
+      <h2>Seções da proposta</h2>
+      <p class="campo-dica">Desmarque para esconder uma seção deste projeto.</p>
+      <div class="linha-caixas">${SECOES.map(([id, nome]) => `<label class="caixa"><input type="checkbox" data-acao-marcar="secao" value="${id}"${c.secoesOcultas.includes(id) ? "" : " checked"}> ${nome}</label>`).join("")}</div>
+    </div>
+    <div class="card">
+      <h2>O que o cliente vê</h2>
+      ${caixa(["config", "mostrarAndamento"], "Mostrar o botão “Progress” (andamento do projeto)")}
+      ${caixa(["config", "showTrack"], "Mostrar o % concluído também dentro da proposta", "Colunas na tabela de etapas e % no cronograma")}
+      ${caixa(["config", "mostrarHorasGastas"], "Mostrar as horas gastas ao cliente", "Normalmente fica desmarcado: as horas gastas são controle interno")}
+    </div>`;
+  }
+
+  function abaConsultor() {
+    return `<div class="card">
+      <h2>Seus dados (aparecem na capa e nos próximos passos)</h2>
+      <div class="form-grid form-grid-2">
+        ${campo(["consultor", "nome"], "Nome")}${campo(["consultor", "empresa"], "Empresa")}
+        ${campo(["consultor", "cnpj"], "CNPJ")}${campo(["consultor", "telefone"], "Telefone / WhatsApp")}
+        ${campo(["consultor", "email"], "E-mail", { tipo: "email" })}${campo(["consultor", "endereco1"], "Endereço (linha 1)")}
+        ${campo(["consultor", "endereco2"], "Endereço (linha 2)")}
+      </div>
+      ${campoML(["consultor", "cargo"], "Cargo")}
+      ${campoML(["consultor", "local"], "Cidade / país")}
+    </div>`;
+  }
+
+  function abaCronograma() {
+    const c = D.config;
+    const comMarco = c.stages.filter((s) => s.ms);
+    const opcoesMarco = (atual) => `<option value="">(automático)</option>` + comMarco.map((s) => `<option value="${v(s.id)}"${s.id === atual ? " selected" : ""}>${v(nomeCurto(s.ms))}</option>`).join("");
+    const fases = c.phases.map((f, i) => {
+      const usada = c.stages.some((s) => s.phase === f.id);
+      return `<div class="item-lista item-fase">
+        <div class="fase-cabeca"><span class="fase-id" style="background:${COR_HEX[f.c] || COR_HEX["--p1"]}">${v(f.id)}</span>
+          <label class="campo campo-inline"><span>Cor</span><select data-p="${P(["config", "phases", i, "c"])}">${CORES.map((cor, n) => `<option value="${cor}"${cor === f.c ? " selected" : ""}>Cor ${n + 1}</option>`).join("")}</select></label>
+          ${controles(["config", "phases"], i, c.phases.length).replace('data-acao="remover"', usada ? 'data-acao="remover" disabled title="Remova antes as etapas desta fase"' : 'data-acao="remover"')}</div>
+        ${campoML(["config", "phases", i], "Nome da fase")}
+        ${campoML(["entregas", f.id], "Entrega da fase (seção Marcos)")}
+      </div>`;
+    }).join("");
+    const etapas = c.stages.map((s, i) => `<div class="item-lista">
+      <div class="form-grid form-grid-etapa">
+        <label class="campo"><span>Fase</span><select data-p="${P(["config", "stages", i, "phase"])}">${c.phases.map((f) => `<option value="${v(f.id)}"${f.id === s.phase ? " selected" : ""}>${v(f.id)} · ${v(nomeCurto(f))}</option>`).join("")}</select></label>
+        ${campo(["config", "stages", i, "hours"], "Horas", { tipo: "num", passo: "0.5" })}
+        <label class="caixa"><input type="checkbox" data-acao-marcar="marco" data-i="${i}"${s.ms ? " checked" : ""}> <span>Marco ◆</span></label>
+        ${caixa(["config", "stages", i, "treinamento"], "Treinamento")}
+      </div>
+      ${campoML(["config", "stages", i], "Nome da etapa")}
+      ${s.ms ? campoML(["config", "stages", i, "ms"], "Nome do marco") : ""}
+      ${controles(["config", "stages"], i, c.stages.length)}
+    </div>`).join("");
+    return `
+    <div class="card">
+      <h2>Capacidade e prazos</h2>
+      <div class="form-grid">
+        ${campo(["config", "startDate"], "Início do projeto", { tipo: "date" })}
+        ${campo(["config", "hoursPerDay"], "Horas por dia", { tipo: "num", passo: "0.5" })}
+        ${campo(["config", "pmHoursTotal"], "Gestão do projeto (h no total)", { tipo: "num", passo: "0.5" })}
+      </div>
+      <div class="campo"><span>Dias trabalhados</span><div class="linha-caixas">${DIAS.map(([n, nome]) => `<label class="caixa"><input type="checkbox" data-acao-marcar="dia" value="${n}"${c.workDays.includes(n) ? " checked" : ""}> ${nome}</label>`).join("")}</div></div>
+    </div>
+    <div class="card">
+      <h2>Preço, faturamento e manutenção</h2>
+      <div class="form-grid">
+        ${campo(["config", "rateEUR"], "Valor hora (EUR)", { tipo: "num" })}
+        ${campo(["config", "eurBrl"], "Câmbio EUR → BRL (só referência)", { tipo: "num", passo: "0.01" })}
+        ${campo(["config", "reworkPct"], "Retrabalho (%)", { tipo: "num" })}
+        ${campo(["config", "depositPct"], "Sinal na assinatura (%)", { tipo: "num" })}
+        ${campo(["config", "prazoPagamentoDias"], "Prazo de pagamento (dias)", { tipo: "num" })}
+        ${campo(["config", "reports"], "Relatórios entregues", { tipo: "num" })}
+        ${campo(["config", "maintHours"], "Manutenção (h/mês)", { tipo: "num" })}
+        ${campo(["config", "maintMonths"], "Manutenção (meses de contrato)", { tipo: "num" })}
+        <label class="campo"><span>Modelo de faturamento recomendado</span><select data-p="${P(["config", "billing"])}"><option value="milestone"${c.billing !== "monthly" ? " selected" : ""}>Por marco (entrega)</option><option value="monthly"${c.billing === "monthly" ? " selected" : ""}>Mensal por horas</option></select></label>
+        ${campo(["config", "pacoteHoras"], "Banco de horas: horas do pacote", { tipo: "num" })}
+        ${campo(["config", "pacoteDesconto"], "Banco de horas: desconto (%)", { tipo: "num" })}
+      </div>
+      <p class="campo-dica">Os totais (horas, valor, datas) são calculados automaticamente e aparecem na pré-visualização.</p>
+    </div>
+    <div class="card">
+      <h2>Fases</h2>
+      ${fases}
+      <button type="button" class="btn btn-ghost btn-pequeno" data-acao="nova-fase">+ Fase</button>
+    </div>
+    <div class="card">
+      <h2>Etapas (na ordem em que acontecem)</h2>
+      <p class="campo-dica">As datas de cada etapa são calculadas em sequência a partir do início, das horas por dia e dos dias trabalhados.</p>
+      ${etapas || '<p class="campo-dica">Nenhuma etapa.</p>'}
+      <button type="button" class="btn btn-ghost btn-pequeno" data-acao="nova-etapa">+ Etapa</button>
+      <div class="form-grid form-grid-2" style="margin-top:18px">
+        <label class="campo"><span>Marco do go-live</span><select data-p="${P(["config", "marcoGoLive"])}">${opcoesMarco(c.marcoGoLive)}</select><small class="campo-dica">Usado na capa e na variável {golive}</small></label>
+        <label class="campo"><span>Marco parcial</span><select data-p="${P(["config", "marcoParcial"])}">${opcoesMarco(c.marcoParcial)}</select><small class="campo-dica">Usado na variável {marco_parcial}</small></label>
+      </div>
+    </div>`;
+  }
+
+  function abaAndamento() {
+    const c = D.config;
+    const linhas = c.phases.map((f) => {
+      const etapas = c.stages.map((s, i) => [s, i]).filter(([s]) => s.phase === f.id);
+      if (!etapas.length) return "";
+      return `<tr class="ph"><td colspan="4">${v(f.id)} · ${v(nomeCurto(f))}</td></tr>` + etapas.map(([s, i]) => `<tr>
+        <td>${v(nomeCurto(s))}${s.ms ? " ◆" : ""}</td><td class="num">${v(s.hours)}</td>
+        <td><input type="number" min="0" max="100" step="5" data-p="${P(["config", "stages", i, "prog"])}" data-tipo="num" value="${v(s.prog || 0)}"></td>
+        <td><input type="number" min="0" step="0.5" data-p="${P(["config", "stages", i, "actual"])}" data-tipo="num" value="${v(s.actual || 0)}"></td></tr>`).join("");
+    }).join("");
+    return `<div class="card">
+      <h2>Andamento das etapas</h2>
+      <p class="campo-dica">Informe o % concluído de cada etapa. O % de cada fase e o geral são calculados pelas horas. O cliente vê o andamento no botão “Progress”${D.config.mostrarHorasGastas ? " (incluindo as horas gastas)" : "; as horas gastas ficam só com você"}.</p>
+      <div class="tabela-wrap tabela-interna"><table class="tabela tabela-andamento"><thead><tr><th>Etapa</th><th>Horas previstas</th><th>% concluído</th><th>Horas gastas</th></tr></thead><tbody>${linhas}</tbody></table></div>
+      <button type="button" class="btn btn-perigo btn-pequeno" data-acao="zerar-andamento" style="margin-top:16px">Zerar andamento</button>
+    </div>`;
+  }
+
+  function editorLista(chave, rotulo, tipo) {
+    const caminho = ["listas", chave];
+    const itens = Array.isArray(obter(caminho)) ? obter(caminho) : [];
+    const corpo = itens.map((item, i) => {
+      const base = [...caminho, i];
+      let conteudo = "";
+      if (tipo === "texto") conteudo = campoML(base, `Item ${i + 1}`, true);
+      if (tipo === "titulo_texto") conteudo = campoML([...base, "titulo"], `Título ${i + 1}`) + campoML([...base, "texto"], "Texto", true);
+      if (tipo === "indicador") conteudo = campoML([...base, "rotulo"], `Rótulo ${i + 1}`) + campo([...base, "valor"], "Número", { dica: "Pode usar variáveis, ex.: {relatorios}" }) + campoML([...base, "detalhe"], "Detalhe");
+      if (tipo === "prereq") conteudo = campoML([...base, "item"], `Item ${i + 1}`) + campoML([...base, "detalhe"], "Detalhe", true) + campoML([...base, "responsavel"], "Responsável");
+      if (tipo === "bloco") {
+        const sub = Array.isArray(item.itens) ? item.itens : [];
+        conteudo = campoML([...base, "titulo"], `Título do quadro ${i + 1}`) +
+          `<div class="sublista">${sub.map((_, j) => `<div class="item-lista">${campoML([...base, "itens", j], `Linha ${j + 1}`)}${controles([...base, "itens"], j, sub.length)}</div>`).join("")}
+          <button type="button" class="btn btn-ghost btn-pequeno" data-acao="adicionar" data-p="${P([...base, "itens"])}" data-modelo="texto">+ Linha</button></div>`;
+      }
+      return `<div class="item-lista">${conteudo}${controles(caminho, i, itens.length)}</div>`;
+    }).join("");
+    return `<div class="bloco-lista"><h4>${rotulo}</h4>${corpo || '<p class="campo-dica">Vazio (não aparece na proposta).</p>'}
+      <button type="button" class="btn btn-ghost btn-pequeno" data-acao="adicionar" data-p="${P(caminho)}" data-modelo="${tipo}">+ Item</button></div>`;
+  }
+
+  function abaTextos() {
+    const ajuda = `<details class="card ajuda-variaveis"><summary><strong>Variáveis</strong> — escreva entre chaves e o valor é calculado sozinho (clique para ver a lista)</summary>
+      <div class="lista-variaveis">${VARIAVEIS.map(([n, d]) => `<code>{${n}}</code> <span>${d}</span>`).join("")}</div></details>`;
+    const secoes = SECOES.map(([id, nome]) => {
+      const def = TEXTOS_SECAO[id] || {};
+      const oculta = D.config.secoesOcultas.includes(id);
+      return `<details class="card secao-textos"${id === "capa" ? " open" : ""}><summary><strong>${nome}</strong>${oculta ? ' <span class="selo selo-inativo">escondida</span>' : ""}</summary>
+        ${campoML(["textos", "nav." + id], "Nome no menu (opcional — deixe vazio para o padrão)")}
+        ${(def.textos || []).map(([k, r, ml]) => campoML(["textos", k], r, ml)).join("")}
+        ${(def.listas || []).map(([k, r, t]) => editorLista(k, r, t)).join("")}
+        ${def.nota ? `<p class="campo-dica">${def.nota}</p>` : ""}
+      </details>`;
+    }).join("");
+    return ajuda + secoes;
+  }
+
+  /* ------------------------------ Desenhar ------------------------------ */
+  function desenhar() {
+    document.getElementById("abas").innerHTML = ABAS.map(([id, nome]) => `<a href="#" data-aba="${id}" class="${id === aba ? "ativa" : ""}">${nome}</a>`).join("");
+    const rolagem = window.scrollY;
+    formulario.innerHTML = { geral: abaGeral, consultor: abaConsultor, cronograma: abaCronograma, andamento: abaAndamento, textos: abaTextos }[aba]();
+    window.scrollTo(0, rolagem);
+  }
+
+  document.getElementById("abas").addEventListener("click", (e) => {
+    const a = e.target.closest("[data-aba]");
+    if (!a) return;
+    e.preventDefault();
+    aba = a.dataset.aba;
+    desenhar();
+    window.scrollTo(0, 0);
+  });
+
+  /* ------------------------------ Estado "salvo / não salvo" ------------------------------ */
+  function marcarSujo() {
+    sujo = true;
+    const s = document.getElementById("statusSalvo");
+    s.textContent = "Alterações não salvas";
+    s.className = "selo selo-pendente";
+  }
+  window.addEventListener("beforeunload", (e) => { if (sujo) { e.preventDefault(); e.returnValue = ""; } });
+
+  /* ------------------------------ Pré-visualização ------------------------------ */
+  let modeloHtml = "";
+  async function carregarPrevia() {
+    if (!modeloHtml) {
+      const r = await fetch(`modelos/${encodeURIComponent(pagina.modelo)}.html`, { cache: "no-cache" });
+      modeloHtml = await r.text();
+    }
+    const script = `<script>window.__DADOS__=${JSON.stringify(D).replace(/</g, "\\u003c")};<\/script>`;
+    const i = modeloHtml.search(/<head[^>]*>/i), fim = modeloHtml.indexOf(">", i) + 1;
+    previa.srcdoc = modeloHtml.slice(0, fim) + script + modeloHtml.slice(fim);
+  }
+  let tPrevia = null;
+  function atualizarPrevia() {
+    clearTimeout(tPrevia);
+    tPrevia = setTimeout(() => { if (previa.contentWindow) previa.contentWindow.postMessage({ tipo: "vd-dados", dados: D }, "*"); }, 350);
+  }
+  document.getElementById("recarregarPrevia").addEventListener("click", carregarPrevia);
+
+  /* ------------------------------ Digitação nos campos ------------------------------ */
+  formulario.addEventListener("input", (e) => {
+    const el = e.target;
+    if (!el.dataset.p || el.dataset.acaoMarcar) return;
+    const caminho = JSON.parse(el.dataset.p);
+    let valor;
+    if (el.dataset.tipo === "bool") valor = el.checked;
+    else if (el.dataset.tipo === "num") valor = el.value === "" ? 0 : Math.max(0, parseFloat(el.value) || 0);
+    else valor = el.tagName === "SELECT" && el.value === "" ? null : el.value;
+    if (caminho[caminho.length - 1] === "prog" && typeof valor === "number") valor = Math.min(100, valor);
+    definir(caminho, valor);
+    marcarSujo();
+    atualizarPrevia();
+    // Mudanças que alteram a estrutura do formulário
+    if (["idiomaPadrao", "phase", "c", "mostrarHorasGastas"].includes(caminho[caminho.length - 1])) desenhar();
+  });
+
+  // Caixas de seleção especiais (idiomas, seções, dias, marco)
+  formulario.addEventListener("change", (e) => {
+    const el = e.target;
+    const tipo = el.dataset.acaoMarcar;
+    if (!tipo) return;
+    const c = D.config;
+    if (tipo === "idioma") {
+      D.idiomas = el.checked ? [...new Set([...D.idiomas, el.value])] : D.idiomas.filter((x) => x !== el.value);
+      if (!D.idiomas.length) { D.idiomas = [el.value]; aviso(avisoEditor, "A proposta precisa de pelo menos um idioma.", "info"); }
+      D.idiomas.sort((a, b) => Object.keys(IDIOMAS).indexOf(a) - Object.keys(IDIOMAS).indexOf(b));
+      if (!D.idiomas.includes(D.idiomaPadrao)) D.idiomaPadrao = D.idiomas[0];
+    }
+    if (tipo === "secao") c.secoesOcultas = el.checked ? c.secoesOcultas.filter((x) => x !== el.value) : [...new Set([...c.secoesOcultas, el.value])];
+    if (tipo === "dia") {
+      const n = +el.value;
+      c.workDays = el.checked ? [...new Set([...c.workDays, n])] : c.workDays.filter((x) => x !== n);
+      if (!c.workDays.length) c.workDays = [n];
+    }
+    if (tipo === "marco") {
+      const s = c.stages[+el.dataset.i];
+      s.ms = el.checked ? { en: s.en || "", it: s.it || "", pt: s.pt || "" } : null;
+      if (!s.ms) { if (c.marcoGoLive === s.id) c.marcoGoLive = null; if (c.marcoParcial === s.id) c.marcoParcial = null; }
+    }
+    marcarSujo();
+    desenhar();
+    atualizarPrevia();
+  });
+
+  /* ------------------------------ Botões (adicionar, remover, mover...) ------------------------------ */
+  formulario.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-acao]");
+    if (!b || b.disabled) return;
+    const c = D.config;
+    const acao = b.dataset.acao;
+    const lista = b.dataset.p ? JSON.parse(b.dataset.p) : null;
+    const i = +b.dataset.i;
+
+    if (acao === "adicionar") {
+      const atual = Array.isArray(obter(lista)) ? obter(lista) : [];
+      const novo = b.dataset.modelo === "contato" ? { nome: "", email: "" } : NOVO_ITEM[b.dataset.modelo]();
+      definir(lista, [...atual, novo]);
+    }
+    if (acao === "remover") {
+      const atual = obter(lista);
+      if (!confirm("Remover este item?")) return;
+      atual.splice(i, 1);
+    }
+    if (acao === "subir" || acao === "descer") {
+      const atual = obter(lista), j = acao === "subir" ? i - 1 : i + 1;
+      if (j < 0 || j >= atual.length) return;
+      [atual[i], atual[j]] = [atual[j], atual[i]];
+    }
+    if (acao === "nova-fase") {
+      let n = c.phases.length + 1;
+      while (c.phases.some((f) => f.id === "P" + n)) n++;
+      c.phases.push({ id: "P" + n, prog: 0, c: CORES[c.phases.length % CORES.length], en: "", it: "", pt: "" });
+    }
+    if (acao === "nova-etapa") {
+      c.stages.push({ id: "S" + Date.now().toString(36), phase: c.phases[c.phases.length - 1].id, hours: 8, en: "", it: "", pt: "", ms: null, prog: 0 });
+    }
+    if (acao === "zerar-andamento") {
+      if (!confirm("Zerar o % concluído e as horas gastas de todas as etapas?")) return;
+      c.stages.forEach((s) => { s.prog = 0; s.actual = 0; });
+      c.phases.forEach((f) => { f.prog = 0; });
+    }
+    marcarSujo();
+    desenhar();
+    atualizarPrevia();
+  });
+
+  /* ------------------------------ Salvar ------------------------------ */
+  const botaoSalvar = document.getElementById("salvar");
+  async function salvar() {
+    botaoSalvar.disabled = true;
+    botaoSalvar.textContent = "Salvando…";
+    const { error: erro } = await sb.from("paginas").update({ estado: D }).eq("id", pagina.id);
+    botaoSalvar.disabled = false;
+    botaoSalvar.textContent = "Salvar";
+    const s = document.getElementById("statusSalvo");
+    if (erro) {
+      aviso(avisoEditor, "Não foi possível salvar: " + erro.message);
+      s.textContent = "Erro ao salvar"; s.className = "selo selo-inativo";
+      return;
+    }
+    sujo = false;
+    aviso(avisoEditor, "");
+    s.textContent = "Salvo às " + new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    s.className = "selo selo-ativo";
+  }
+  botaoSalvar.addEventListener("click", salvar);
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); salvar(); }
+  });
+
+  /* ------------------------------ Importar / exportar JSON ------------------------------ */
+  document.getElementById("exportar").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(D, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${(pagina.projetos ? pagina.projetos.nome : "projeto").replace(/[^\w-]+/g, "-").toLowerCase()}-${pagina.modelo}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  document.getElementById("importar").addEventListener("change", async (e) => {
+    const arquivo = e.target.files[0];
+    e.target.value = "";
+    if (!arquivo) return;
+    try {
+      const dados = JSON.parse(await arquivo.text());
+      if (!dados || typeof dados !== "object" || !dados.config) throw new Error("O arquivo não tem a estrutura esperada (falta \"config\").");
+      if (!confirm(`Substituir TODOS os dados desta página pelo arquivo "${arquivo.name}"?\n\nAs alterações só ficam valendo depois de clicar em Salvar.`)) return;
+      D = normalizar(dados);
+      marcarSujo();
+      desenhar();
+      await carregarPrevia();
+      aviso(avisoEditor, "Dados importados. Confira e clique em Salvar.", "info");
+    } catch (erro) {
+      aviso(avisoEditor, "Arquivo inválido: " + erro.message);
+    }
+  });
+
+  desenhar();
+  await carregarPrevia();
+})();
+</script>
+</body>
+</html>

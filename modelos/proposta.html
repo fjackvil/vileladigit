@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- MODELO DE PROPOSTA (Vilela Digit). Sem dados de cliente: os dados vêm do Supabase. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proposal</title>
+<style>
+:root{
+  --navy:#0e2a47; --navy-2:#173a5e; --accent:#2a78d6; --accent-soft:#e3eefb;
+  --page:#f4f5f7; --surface:#ffffff; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --context:#b9bec6; --border:rgba(11,11,11,.10);
+  --good:#0ca30c; --good-text:#006300; --bad:#d03b3b; --warn:#fab219;
+  --p1:#2a78d6; --p2:#eb6834; --p3:#1baf7a; --p4:#4a3aa7; --p5:#e87ba4; --p6:#008300; --p7:#eda100;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --accent-soft:#1c2c40; --good-text:#0ca30c; --context:#55595f;
+    --p1:#3987e5; --p2:#d95926; --p3:#199e70; --p4:#9085e9; --p5:#d55181; --p6:#008300; --p7:#c98500;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --accent-soft:#1c2c40; --good-text:#0ca30c; --context:#55595f;
+  --p1:#3987e5; --p2:#d95926; --p3:#199e70; --p4:#9085e9; --p5:#d55181; --p6:#008300; --p7:#c98500;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--page);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.45}
+/* top bar */
+#top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:10px 24px;background:var(--navy);color:#fff}
+#top .brand{font-weight:600;letter-spacing:.5px;font-size:14px;margin-right:auto}
+#top .brand small{color:#9fb6d1;font-weight:400;margin-left:8px}
+.seg{display:inline-flex;border:1px solid rgba(255,255,255,.25);border-radius:7px;overflow:hidden}
+.seg button{background:transparent;color:#c9d6e6;border:0;padding:6px 12px;font-size:12.5px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+.btn{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:7px;padding:6px 12px;font-size:12.5px;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.18)}
+#nav{display:flex;gap:2px;overflow-x:auto;padding:0 24px;background:var(--navy-2);scrollbar-width:none}
+#nav a{color:#b8c9dc;text-decoration:none;font-size:12.5px;padding:8px 10px;white-space:nowrap;border-bottom:2px solid transparent}
+#nav a.on{color:#fff;border-bottom-color:var(--accent)}
+/* slides */
+main{max-width:1240px;margin:0 auto;padding:24px 24px 80px}
+section.slide{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 44px;margin:0 0 24px;min-height:560px;scroll-margin-top:110px;position:relative}
+.kicker{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent);font-weight:600}
+h2{font-size:28px;line-height:1.2;margin:6px 0 6px;font-weight:600;text-wrap:balance}
+.lead{font-size:16px;color:var(--ink-2);max-width:880px;margin:0 0 22px}
+.pg{position:absolute;right:22px;bottom:14px;font-size:11px;color:var(--muted)}
+/* cover */
+.cover{background:radial-gradient(ellipse at 80% 0%,#1d4f86 0%,#0e2a47 50%,#081a2d 100%) !important;color:#fff;display:flex;flex-direction:column;justify-content:center}
+.cover .kicker{color:#8fb8ef}
+.cover h1{font-size:46px;margin:12px 0 10px;line-height:1.1}
+.cover .lead{color:#c9d6e6;font-size:18px}
+.cover .meta{display:flex;gap:40px;margin-top:40px;font-size:13px;color:#9fb6d1}
+.cover .meta b{display:block;color:#fff;font-size:15px;font-weight:600}
+.co-logo{background:#fff;border-radius:10px;padding:8px 10px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.co-logo img{display:block;height:64px;width:auto}
+.cover .co-logo{position:absolute;top:32px;right:40px}
+.cover .co-logo img{height:84px}
+/* generic */
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:1fr 1fr}
+.tile{border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.tile .l{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--ink-2)}
+.tile .v{font-size:32px;font-weight:600;line-height:1.15;margin-top:4px}
+.tile .d{font-size:12.5px;color:var(--ink-2)}
+.box{border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.box h3{margin:0 0 8px;font-size:15px}
+.box ul{margin:0;padding-left:18px;color:var(--ink-2)} .box li{margin:4px 0}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:10px}
+.flow .st{border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;background:var(--surface)}
+.flow .st .n{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:600}
+.flow .st h4{margin:10px 0 4px;font-size:14px}
+.flow .st p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.flow .st:not(:last-child)::after{content:"→";position:absolute;right:-12px;top:44%;color:var(--muted);font-size:16px}
+table.tb{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.tb th{text-align:right;color:var(--ink-2);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--axis);white-space:nowrap}
+table.tb td{padding:7px 10px;border-bottom:1px solid var(--grid);text-align:right;vertical-align:top}
+table.tb th:first-child,table.tb td:first-child,table.tb td.l,table.tb th.l{text-align:left}
+table.tb tr.tot td{font-weight:700;border-top:1px solid var(--axis);border-bottom:0}
+table.tb tr.ph td{background:var(--accent-soft);font-weight:600}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:baseline}
+.bar{height:12px;border-radius:0 4px 4px 0;background:var(--context)}
+.bar.acc{background:var(--accent)}
+.insight{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:4px;font-size:14px;margin-top:16px}
+/* gantt */
+.gantt{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.gh,.gr{display:grid;grid-template-columns:330px 1fr}
+.gh{background:var(--page);font-size:11px;color:var(--ink-2);border-bottom:1px solid var(--border)}
+.gh .lab{padding:8px 12px;font-weight:600}
+.months{position:relative;height:34px}
+.months span{position:absolute;top:0;bottom:0;border-left:1px solid var(--border);padding:9px 6px;white-space:nowrap;overflow:hidden}
+.gr{font-size:12.5px;border-bottom:1px solid var(--grid);min-height:26px}
+.gr .lab{padding:4px 12px;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gr.phase{background:var(--page);font-weight:600}
+.gr.phase .lab{font-size:12.5px}
+.track{position:relative}
+.track .gl{position:absolute;top:0;bottom:0;border-left:1px dashed var(--grid)}
+.gb{position:absolute;top:6px;height:14px;border-radius:4px;cursor:help;min-width:3px}
+.gr.phase .gb{top:9px;height:8px;border-radius:2px;opacity:.55}
+.ms{position:absolute;top:5px;width:14px;height:14px;transform:rotate(45deg);background:var(--ink);border:2px solid var(--surface);cursor:help}
+.today{position:absolute;top:0;bottom:0;border-left:2px solid var(--bad)}
+.lbl-h{font-variant-numeric:tabular-nums;color:var(--muted);margin-left:auto;padding-left:8px;font-weight:400}
+.gr.phase{min-height:40px}
+.gr.phase .gb{top:7px}
+.gp{position:absolute;top:20px;height:12px;border-radius:3px;background:var(--grid);overflow:visible;cursor:help}
+.gp i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.gp.end b{left:auto;right:calc(100% + 6px)}
+.gp b{position:absolute;left:calc(100% + 6px);top:-2px;font-size:11px;font-weight:600;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.glg{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--muted);margin-top:10px}
+.glg span{display:inline-flex;align-items:center;gap:6px}
+.glg em{display:inline-block;width:22px;height:8px;border-radius:2px}
+/* hbar chart */
+.hb{display:grid;grid-template-columns:260px 1fr 120px;align-items:center;gap:10px;font-size:13.5px;margin:7px 0}
+.hb .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+/* timeline months chart */
+.mchart{display:flex;align-items:flex-end;gap:8px;height:200px;border-bottom:1px solid var(--axis);padding-top:20px}
+.mchart .c{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11.5px;color:var(--ink-2)}
+.mchart .c .b{width:70%;background:var(--context);border-radius:4px 4px 0 0;position:relative}
+.mchart .c .b span{position:absolute;top:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink)}
+.mlabels{display:flex;gap:8px;font-size:11.5px;color:var(--ink-2);margin-top:4px}
+.mlabels div{flex:1;text-align:center}
+/* PT tooltip */
+.tr{cursor:help;text-decoration:underline dotted transparent}
+body:not(.nohint) .tr:hover{text-decoration-color:var(--muted)}
+#tip{position:fixed;z-index:999;pointer-events:none;background:#111c2b;color:#fff;font-size:13px;line-height:1.4;padding:8px 11px;border-radius:7px;max-width:380px;box-shadow:0 6px 18px rgba(0,0,0,.3);opacity:0;transition:opacity .12s}
+#tip.on{opacity:1}
+#tip .flag{font-size:10px;letter-spacing:1px;color:#8fb8ef;display:block;margin-bottom:2px}
+/* admin */
+#admin{position:fixed;top:0;right:0;bottom:0;width:min(640px,100vw);background:var(--surface);border-left:1px solid var(--border);box-shadow:-12px 0 40px rgba(0,0,0,.2);z-index:100;transform:translateX(105%);transition:transform .25s;display:flex;flex-direction:column}
+#admin.open{transform:none}
+#admin header{display:flex;align-items:center;gap:10px;padding:14px 20px;background:var(--navy);color:#fff}
+#admin header h3{margin:0;font-size:16px;flex:1}
+#admin .body{overflow:auto;padding:18px 20px 40px}
+#admin fieldset{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:0 0 16px}
+#admin legend{font-weight:600;font-size:13.5px;padding:0 6px}
+.frm{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px}
+.frm label{display:flex;flex-direction:column;font-size:12px;color:var(--ink-2);gap:4px}
+.frm input,.frm select,#admin input,#admin select{font:inherit;font-size:13.5px;padding:6px 8px;border:1px solid var(--axis);border-radius:6px;background:var(--surface);color:var(--ink);min-width:0}
+.days{display:flex;gap:4px;flex-wrap:wrap}
+.days label{flex-direction:row;align-items:center;gap:3px;font-size:12.5px;color:var(--ink)}
+.calc{font-size:13px;background:var(--accent-soft);border-radius:8px;padding:10px 12px;margin-top:10px;line-height:1.6}
+.brl{font-variant-numeric:tabular-nums}
+.stg{width:100%;border-collapse:collapse;font-size:12.5px}
+.stg th{text-align:left;color:var(--ink-2);font-weight:600;padding:4px;border-bottom:1px solid var(--axis)}
+.stg td{padding:3px 4px;border-bottom:1px solid var(--grid);vertical-align:middle}
+.stg input[type=text]{width:100%}
+.stg input[type=number]{width:62px}
+.stg select{width:58px}
+.ib{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:5px;padding:2px 6px;cursor:pointer;font-size:12px}
+.addrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px}
+.addrow2{display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap}
+.abtn{background:var(--accent);color:#fff;border:0;border-radius:7px;padding:8px 14px;cursor:pointer;font-size:13px}
+.abtn.sec{background:transparent;color:var(--ink);border:1px solid var(--axis)}
+/* presentation mode */
+body.present #top .admin-only, body.present .admin-only{display:none !important}
+body.present #nav{display:none}
+#cloudSt{font-size:12px;color:#b8c9dc;white-space:nowrap}#cloudSt.ok{color:#9fe0a8}#cloudSt.err{color:#ffb4a8}
+#trackView{display:none;max-width:1180px;margin:24px auto;padding:0 24px}
+body.tracking #trackView{display:block} body.tracking #slides,body.tracking #nav{display:none}
+body.present #trackView,body.present #trackBtn{display:none !important}
+.tk-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:16px 0 22px}
+.tk-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.tk-card .l{font-size:12px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.05em}
+.tk-card .v{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px}
+.tk-card .d{font-size:12.5px;color:var(--muted)}
+.tk-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:20px}
+.tk-row{display:grid;grid-template-columns:minmax(150px,240px) 1fr 150px;gap:12px;align-items:center;padding:6px 0;font-size:13px}
+.tk-row .bw{position:relative;height:18px;background:var(--grid);border-radius:4px}
+.tk-row .bw .e{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.tk-row .bw .a{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--ink);border-radius:2px;margin-left:-1.5px}
+.tk-row .n{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:12.5px}
+.tk-tb input{width:78px;text-align:right;font:inherit;padding:4px 6px;border:1px solid var(--axis);border-radius:6px;background:var(--surface);color:var(--ink)}
+.tk-tb td{vertical-align:middle}
+.tk-tb tr.ph td{font-weight:700;background:var(--accent-soft)}
+.tk-lg{display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:var(--ink-2);margin-top:10px}
+.tk-lg em{display:inline-block;width:18px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+@media (max-width:700px){.tk-row{grid-template-columns:1fr}.tk-row .n{text-align:left}}
+@media print{#trackView{display:none !important}}
+body.present main{max-width:none;padding:0}
+body.present section.slide{display:none;min-height:100vh;margin:0;border-radius:0;border:0;padding:6vh 7vw}
+body.present section.slide.cur{display:block}
+body.present #top{position:fixed;top:auto;bottom:0;left:0;right:0;background:transparent;justify-content:flex-end;opacity:0;transition:opacity .2s}
+body.present #top:hover{opacity:1}
+body.present #top .brand{display:none}
+#exitP{display:none}
+body.present #exitP{display:inline-block}
+@media (max-width:860px){
+  main{padding:12px 16px 60px}
+  section.slide{padding:22px 18px}
+  .g4,.g3,.g2,.flow{grid-template-columns:1fr}
+  .gh,.gr{grid-template-columns:150px 1fr}
+  .hb{grid-template-columns:120px 1fr 80px}
+  .frm{grid-template-columns:1fr 1fr}
+  #top{flex-wrap:wrap}
+  .cover h1{font-size:32px}
+}
+@page{size:A4 landscape;margin:10mm}
+@media print{
+  html,body{background:#fff !important}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #top,#nav,#admin,#tip,#exitP{display:none !important}
+  main{max-width:none !important;padding:0 !important;margin:0 !important}
+  section.slide{display:block !important;break-after:page;page-break-after:always;break-inside:auto;margin:0 !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;min-height:0 !important;padding:6mm 4mm !important;zoom:.8}
+  section.slide:last-child{break-after:auto;page-break-after:auto}
+  #s4{zoom:.62}
+  .gr,.hb,tr,.box,.tile{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="brand"><span id="brandTxt"></span> <small id="brandSub"></small></div>
+  <div class="seg" id="langSeg"></div>
+  <button class="btn" id="hintBtn" title="Portuguese hints on hover">PT ⓘ</button>
+  <button class="btn" id="pdfBtn">⬇ PDF</button>
+  <button class="btn" id="trackBtn"></button>
+  <button class="btn" id="presBtn"></button>
+  <button class="btn" id="exitP">✕</button>
+</div>
+<nav id="nav"></nav>
+<main id="slides"></main>
+<section id="trackView" aria-label="Project progress"></section>
+<div id="tip"></div>
+
+<script>
+/* =====================================================================
+   MODELO DE PROPOSTA — Vilela Digit
+   Este arquivo é só o VISUAL e os CÁLCULOS. Nenhum dado de cliente fica
+   aqui: textos, contatos, fases, valores e andamento chegam em
+   window.__DADOS__ (vindos do Supabase, colocados pela pagina.html).
+   Documentação dos campos: repositório vileladigit-supabase, LEIA-ME.md.
+   ===================================================================== */
+const LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAL4AAADiCAMAAADH5o0jAAAAwFBMVEX8mZer2J38HRvp8deN0G/8aWnorh3sxFlNsiVksVw8oy/t16tfyjM+nkCCvIL8PkF+x2D+vsC/38H0m2L+/v4BAQFmzDkymTL8AQHpsyDpshzp5+dXV1cYGBg0qQalpaXY2NfIyMiXl5fvy3WEhIRGRkYlJSXK7bzrvUc3Nzf57NRnZ2d4eHh60lG3t7f+xsf8RUbQ6M2y2LJMpEySx5L8Ojv8aGj+u7v+19f147dVuTNzt3Nux0r4JgXtexNDnkSe5fyMAAAAQHRSTlP/////////////////////////////////////////////////////////////////////////////////////73leyQAAClhJREFUeNrt3QlzmzgUAGA7R5vee+A4sSAcARoCJbXjtkma3f3//2qFxCEJAQJs63kGzXRmizH+eH46kbszQ19Zz7dbZ9wlZvr088flcvlpi46Tv13S8vso+YV+udweIb/SLx/R0fEZ/XL54dj4nH65OTI+r1+uj4sv6C8Oyj+9v9+p/v3l18PxT9++vbu7fd6h/uWA/Pvb69VqdX033D/n9cuXy8PxT2+vSVkN9m/q+suD5f4HEvvr1WD/5j8xcw7Jv13l0V8N88ti//FwyUP49M8Qv0x/eXlg/jW9hdXd/W70Gvi0/t6Pyfvly6tWfs/82TzKY68t+qvVW/X4b95z+MdKry36PfybT7x+800/Xz3/Rf3a0M8nt6AUf6HWYj0QvlL8hVqb6aHwFfwyPZjod9ZfUT83gPCL8VurX9TnM1udfMKmf8gttPgdodb+ZQDgUz0du2V/uW16x1oee+3867s3WeCLm/jQU68397H3+S5PfZr+Kvr/mBUdvXzcWmJ/UXvx7OW0n14/n/hp/sj5bXoAfOwvK/HbnnoI/MxPW8/r+y79J2ElEwLfeKZNv6ThEfTvxXVYEHzjOVv5kay6tWcOGD6+gefnzryXrIFD4Uvb+3ddesj87thD5qvo4fLFzJkbx8Rf/+b1W+OY+GLsG/RA+ap6mHzFzAHKV449TL5y7EHye+gB8vvo4fF76cHx++mh8QX9Z+Oo+D1jD4z/uV3/MDs/n/0Cy9+2Z87D9ytcTs4RTL4wwP8t1eMyg8nfqOmvfjzA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';
+
+/* =====================================================================
+   DADOS
+   ===================================================================== */
+const CONFIG_PADRAO={startDate:new Date().toISOString().slice(0,10),hoursPerDay:6,workDays:[1,2,3,4,5],pmHoursTotal:0,
+  rateEUR:80,reworkPct:15,contingencyPct:0,eurBrl:5.6,billing:'milestone',reports:10,depositPct:15,maintHours:16,maintMonths:12,
+  prazoPagamentoDias:30,pacoteHoras:100,pacoteDesconto:5,showTrack:false,mostrarAndamento:true,mostrarHorasGastas:false,
+  secoesOcultas:[],marcoGoLive:null,marcoParcial:null,
+  phases:[{id:'P1',prog:0,c:'--p1',en:'Phase 1',it:'Fase 1',pt:'Fase 1'}],
+  stages:[{id:'S1',phase:'P1',hours:8,en:'Stage 1',it:'Attività 1',pt:'Etapa 1',ms:null}]};
+function normalizar(d){
+  d=JSON.parse(JSON.stringify(d||{}));
+  d.idiomas=Array.isArray(d.idiomas)&&d.idiomas.length?d.idiomas:['en'];
+  d.idiomaPadrao=d.idiomas.includes(d.idiomaPadrao)?d.idiomaPadrao:d.idiomas[0];
+  d.config={...CONFIG_PADRAO,...(d.config||{})};
+  if(!Array.isArray(d.config.phases)||!d.config.phases.length)d.config.phases=CONFIG_PADRAO.phases;
+  if(!Array.isArray(d.config.stages))d.config.stages=[];
+  if(!Array.isArray(d.config.workDays)||!d.config.workDays.length)d.config.workDays=[1,2,3,4,5];
+  if(!Array.isArray(d.config.secoesOcultas))d.config.secoesOcultas=[];
+  d.projeto=d.projeto||{};d.cliente=d.cliente||{};d.cliente.contatos=d.cliente.contatos||[];
+  d.consultor=d.consultor||{};d.textos=d.textos||{};d.listas=d.listas||{};d.entregas=d.entregas||{};
+  return d;
+}
+let D=normalizar(window.__DADOS__);
+let S=D.config;
+let lang=D.idiomaPadrao;
+let hints=true;
+
+/* =====================================================================
+   TEXTOS FIXOS DO MODELO (rótulos de tabelas e botões, iguais para todo projeto)
+   Os textos de conteúdo de cada projeto ficam em D.textos e D.listas.
+   ===================================================================== */
+const U={
+ present:{en:'Presentation mode',it:'Modalità presentazione',pt:'Modo apresentação'},
+ sub:{en:'Development proposal',it:'Proposta di sviluppo',pt:'Proposta de desenvolvimento'},
+ progressBtn:{en:'📊 Progress',it:'📊 Avanzamento',pt:'📊 Andamento'},
+ proposalBtn:{en:'📄 Proposal',it:'📄 Proposta',pt:'📄 Proposta'},
+ pdf:{en:'Export to PDF',it:'Esporta in PDF',pt:'Exportar para PDF'},
+ preparedBy:{en:'Prepared by',it:'Preparato da',pt:'Preparado por'},preparedFor:{en:'Prepared for',it:'Preparato per',pt:'Preparado para'},
+ duration:{en:'Duration',it:'Durata',pt:'Duração'},start:{en:'Start',it:'Inizio',pt:'Início'},end:{en:'End',it:'Fine',pt:'Fim'},golive:{en:'Go-live',it:'Go-live',pt:'Go-live'},
+ weeks:{en:'weeks',it:'settimane',pt:'semanas'},wk:{en:'wk',it:'sett.',pt:'sem.'},days:{en:'days',it:'giorni',pt:'dias'},
+ stage:{en:'Stage',it:'Attività',pt:'Etapa'},hours:{en:'Hours',it:'Ore',pt:'Horas'},complete:{en:'% complete',it:'% completato',pt:'% concluído'},actualH:{en:'Actual hours',it:'Ore effettive',pt:'Horas reais'},
+ pm:{en:'Project management & meetings',it:'Project management e riunioni',pt:'Gestão do projeto e reuniões'},
+ pmWeekly:{en:'Project management & weekly meetings',it:'Project management e riunioni settimanali',pt:'Gestão do projeto e reuniões semanais'},
+ totalHours:{en:'Total hours',it:'Totale ore',pt:'Total de horas'},
+ totalIncl:{en:'Total incl. rework and project management',it:'Totale incl. rilavorazioni e project management',pt:'Total com retrabalho e gestão do projeto'},
+ phaseStage:{en:'Phase / stage',it:'Fase / attività',pt:'Fase / etapa'},planned:{en:'Planned',it:'Pianificato',pt:'Planejado'},
+ delivered:{en:'Delivered (% of phase)',it:'Consegnato (% della fase)',pt:'Entregue (% da fase)'},
+ phase:{en:'Phase',it:'Fase',pt:'Fase'},deliverable:{en:'Deliverable',it:'Deliverable',pt:'Entrega'},date:{en:'Date',it:'Data',pt:'Data'},
+ delivDefault:{en:'Phase deliverables approved',it:'Deliverable di fase approvati',pt:'Entregas da fase aprovadas'},
+ investment:{en:'Investment',it:'Investimento',pt:'Investimento'},effort:{en:'Effort',it:'Impegno',pt:'Esforço'},
+ msApproval:{en:'Milestone (approval)',it:'Milestone (approvazione)',pt:'Marco (aprovação)'},expDate:{en:'Expected date',it:'Data prevista',pt:'Data prevista'},
+ amount:{en:'Amount',it:'Importo',pt:'Valor'},cumulative:{en:'Cumulative',it:'Cumulato',pt:'Acumulado'},total:{en:'Total',it:'Totale',pt:'Total'},
+ downPayment:{en:'Down payment',it:'Anticipo',pt:'Sinal'},onSigning:{en:'on signing the agreement',it:'alla firma del contratto',pt:'na assinatura do contrato'},
+ payment:{en:'Payment',it:'Pagamento',pt:'Pagamento'},payAfter:{en:'from invoice date, after phase approval',it:'dalla data fattura, dopo l\'approvazione della fase',pt:'da data da fatura, após aprovação da fase'},
+ avgMonth:{en:'Average per month',it:'Media mensile',pt:'Média por mês'},proposed:{en:'proposed',it:'proposto',pt:'proposto'},
+ modelB:{en:'Model B: estimated monthly invoices',it:'Modello B: fatture mensili stimate',pt:'Modelo B: faturas mensais estimadas'},
+ billingTerms:{en:'Billing terms',it:'Condizioni di fatturazione',pt:'Regras de faturamento'},
+ plans:[{en:'Essential',it:'Essenziale',pt:'Essencial'},{en:'Standard',it:'Standard',pt:'Padrão'},{en:'Extended',it:'Esteso',pt:'Ampliado'}],
+ recommended:{en:'recommended',it:'consigliato',pt:'recomendado'},month:{en:'month',it:'mese',pt:'mês'},mo:{en:'mo',it:'mese',pt:'mês'},
+ included:{en:'What is included',it:'Cosa è incluso',pt:'O que está incluso'},terms:{en:'Terms',it:'Condizioni',pt:'Condições'},
+ item:{en:'Item',it:'Voce',pt:'Item'},detail:{en:'Detail',it:'Dettaglio',pt:'Detalhe'},providedBy:{en:'Provided by',it:'A cura di',pt:'Responsável'},
+ taxId:{en:'Brazilian tax ID (CNPJ)',it:'Codice fiscale brasiliano (CNPJ)',pt:'CNPJ'},phone:{en:'Phone / WhatsApp',it:'Telefono / WhatsApp',pt:'Telefone / WhatsApp'},
+ clientContacts:{en:'Client contacts',it:'Referenti del cliente',pt:'Contatos do contratante'},
+ nav:{capa:{en:'Cover',it:'Copertina',pt:'Capa'},contexto:{en:'Context',it:'Contesto',pt:'Contexto'},solucao:{en:'Solution',it:'Soluzione',pt:'Solução'},
+  escopo:{en:'Scope & effort',it:'Perimetro e impegno',pt:'Escopo e esforço'},cronograma:{en:'Timeline',it:'Cronoprogramma',pt:'Cronograma'},
+  marcos:{en:'Milestones',it:'Milestone',pt:'Marcos'},treinamento:{en:'Training',it:'Formazione',pt:'Treinamento'},investimento:{en:'Investment',it:'Investimento',pt:'Investimento'},
+  faturamento:{en:'Billing',it:'Fatturazione',pt:'Faturamento'},modelos_faturamento:{en:'Billing models & terms',it:'Modelli e condizioni di fatturazione',pt:'Modelos e regras de faturamento'},
+  manutencao:{en:'Monthly maintenance',it:'Manutenzione mensile',pt:'Manutenção mensal'},prerequisitos:{en:'Prerequisites',it:'Prerequisiti',pt:'Pré-requisitos'},proximos:{en:'Next steps',it:'Prossimi passi',pt:'Próximos passos'}},
+ /* andamento (visão do cliente) */
+ tkTitle:{en:'Project progress',it:'Avanzamento del progetto',pt:'Andamento do projeto'},
+ tkKicker:{en:'Updated by the consultant',it:'Aggiornato dal consulente',pt:'Atualizado pelo consultor'},
+ tkLead:{en:'Percentage complete of each phase and stage, weighted by the planned hours.',it:'Percentuale completata di ogni fase e attività, ponderata sulle ore pianificate.',pt:'Percentual concluído de cada fase e etapa, ponderado pelas horas planejadas.'},
+ tkOverall:{en:'Overall progress',it:'Avanzamento complessivo',pt:'Evolução geral'},tkPlannedH:{en:'Planned hours',it:'Ore pianificate',pt:'Horas planejadas'},
+ tkDeliveredH:{en:'Delivered hours',it:'Ore consegnate',pt:'Horas entregues'},tkSpent:{en:'Hours spent',it:'Ore impiegate',pt:'Horas gastas'},
+ tkNext:{en:'Next milestone',it:'Prossima milestone',pt:'Próximo marco'},tkGantt:{en:'Timeline',it:'Cronoprogramma',pt:'Cronograma'},tkToday:{en:'Today',it:'Oggi',pt:'Hoje'},
+ tkLate:{en:'late',it:'in ritardo',pt:'atrasada'},tkLateNote:{en:'In red: stage past its planned date and not yet complete',it:'In rosso: attività oltre la data prevista e non completata',pt:'Em vermelho: etapa com data prevista vencida e não concluída'},
+ tkStages:{en:'Stages',it:'Attività',pt:'Etapas'},tkPlannedEnd:{en:'Planned end',it:'Fine prevista',pt:'Término previsto'},tkDone:{en:'Done',it:'Fatto',pt:'Concluído'}
+};
+
+/* =====================================================================
+   FUNÇÕES DE APOIO
+   ===================================================================== */
+const L={en:'en-GB',it:'it-IT',pt:'pt-BR'};
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const ordem=()=>[lang,...D.idiomas,'en','pt','it'];
+const t=o=>{if(o==null)return '';if(typeof o!=='object')return String(o);for(const l of ordem())if(o[l])return o[l];return ''};
+const temPT=()=>D.idiomas.includes('pt');
+const W=(o,tag='span',cls='')=>`<${tag} class="tr ${cls}"${temPT()&&o&&o.pt?` data-pt="${esc(o.pt)}"`:''}>${esc(t(o))}</${tag}>`;
+const nf=(v,d=0,lg=lang)=>Number(v||0).toLocaleString(L[lg]||'en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
+const eur=(v,lg=lang)=>Number(v||0).toLocaleString(L[lg]||'en-GB',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const dfmt=(d,lg=lang)=>d.toLocaleDateString(L[lg]||'en-GB',{day:'2-digit',month:'short',year:'numeric'});
+const mfmt=(d,lg=lang)=>d.toLocaleDateString(L[lg]||'en-GB',{month:'short',year:'2-digit'});
+const TR=()=>S.showTrack===true;
+const pc=x=>Math.min(100,Math.max(0,+x||0));
+
+/* ---- textos do projeto, com variáveis calculadas: {semanas}, {investimento}, {golive}... ---- */
+let VARS={};
+function prepararVariaveis(R){VARS={};['en','it','pt'].forEach(lg=>{VARS[lg]=variaveis(R,lg)})}
+function variaveis(R,lg){
+  const p80=marcoParcial(R);const iniM=new Date(R.end.getFullYear(),R.end.getMonth()+1,1);
+  return {cliente:D.cliente.sigla||D.cliente.nome||'',relatorios:nf(S.reports,0,lg),retrabalho:nf(S.reworkPct,0,lg),
+    semanas:nf(R.weeks,0,lg),inicio:dfmt(R.start,lg),fim:dfmt(R.end,lg),golive:dfmt(goLive(R),lg),marco_parcial:dfmt(p80?p80.end:R.end,lg),
+    investimento:eur(R.base,lg),horas_total:nf(R.totalHours,0,lg),fases:String(R.phases.length),sinal:nf(S.depositPct,0,lg),
+    manut_horas:nf(S.maintHours,0,lg),manut_valor:eur((+S.maintHours||0)*S.rateEUR,lg),manut_meses:String(Math.max(1,+S.maintMonths||12)),
+    inicio_manut:dfmt(iniM,lg),treinamento_horas:nf(treinoHoras(R),0,lg),valor_semana:eur(R.base/Math.max(1,R.weeks),lg),
+    meses:String(R.months.length),horas_dia:nf(S.hoursPerDay,1,lg),dias_semana:String(S.workDays.length),horas_semana:nf(R.hoursWeek,0,lg),
+    horas_mes:nf(R.hoursMonth,0,lg),progresso:nf(R.progress,0,lg),prazo_pagamento:String(S.prazoPagamentoDias),valor_hora:eur(S.rateEUR,lg),
+    pacote_horas:nf(S.pacoteHoras,0,lg),pacote_desconto:nf(S.pacoteDesconto,0,lg),pacote_valor:eur((+S.pacoteHoras||0)*S.rateEUR*(1-(+S.pacoteDesconto||0)/100),lg)};
+}
+function preencher(o){
+  if(o==null)return {};if(typeof o!=='object')o={en:String(o)};
+  const r={};for(const k in o){const vs=VARS[k]||VARS.en||{};r[k]=String(o[k]??'').replace(/\{([a-z_]+)\}/g,(m,n)=>n in vs?vs[n]:m)}return r;
+}
+const TXT=k=>preencher(D.textos[k]);
+const WT=(k,tag,cls)=>W(TXT(k),tag,cls);
+const WP=(o,tag,cls)=>W(preencher(o),tag,cls);
+const tem=k=>!!t(D.textos[k]);
+const LST=k=>(Array.isArray(D.listas[k])?D.listas[k]:[]);
+const ul=k=>LST(k).map(x=>`<li>${WP(x)}</li>`).join('');
+
+/* ---- marcos especiais ---- */
+function goLive(R){const g=(S.marcoGoLive&&R.res.find(r=>r.id===S.marcoGoLive))||R.res.find(r=>r.ms&&/go-?live/i.test([r.ms.en,r.ms.it,r.ms.pt].join(' ')));return g?g.end:R.end}
+function marcoParcial(R){return (S.marcoParcial&&R.res.find(r=>r.id===S.marcoParcial))||R.res.find(r=>r.ms&&/80/.test(r.ms.en||''))||null}
+function etapasTreino(R){return R.res.filter(r=>r.treinamento===true||(r.treinamento==null&&/train-the-trainer|multiplicador/i.test((r.en||'')+' '+(r.pt||''))))}
+function treinoHoras(R){return etapasTreino(R).reduce((a,s)=>a+(+s.hours||0),0)}
+
+/* =====================================================================
+   CRONOGRAMA: etapas em sequência, capacidade diária, gestão distribuída
+   ===================================================================== */
+function schedule(){
+  const days=S.workDays.length||5;
+  const pmFixed=Math.max(0,+S.pmHoursTotal||0);
+  const prodNeed=S.stages.reduce((a,s)=>a+Math.max(0,+s.hours||0),0)*(1+(+S.reworkPct||0)/100);
+  const pmDay=(prodNeed+pmFixed)>0?S.hoursPerDay*pmFixed/(prodNeed+pmFixed):0;
+  const cap=Math.max(0.25,S.hoursPerDay-pmDay);
+  let d=new Date(S.startDate+'T00:00:00');
+  const isWork=x=>S.workDays.includes(x.getDay());
+  while(!isWork(d)) d.setDate(d.getDate()+1);
+  let left=cap;const res=[];const daily={};
+  const addH=(dt,h)=>{const k=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0');daily[k]=(daily[k]||0)+h};
+  let workDaysCount=0;
+  const nextDay=()=>{do{d.setDate(d.getDate()+1)}while(!isWork(d));left=cap};
+  S.stages.forEach(st=>{
+    let need=Math.max(0,+st.hours||0)*(1+(+S.reworkPct||0)/100);
+    if(left<=0.0001) nextDay();
+    const start=new Date(d);
+    if(need===0){res.push({...st,start,end:new Date(d)});return}
+    while(need>0.0001){const use=Math.min(left,need);need-=use;left-=use;addH(d,use);if(need>0.0001) nextDay()}
+    res.push({...st,start,end:new Date(d)});
+  });
+  const end=new Date(d);const s0=new Date(S.startDate+'T00:00:00');const pmByMonth={};
+  for(let x=new Date(s0);x<=end;x.setDate(x.getDate()+1)){if(isWork(x)){workDaysCount++;const k=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');pmByMonth[k]=(pmByMonth[k]||0)+pmDay}}
+  const pmTotal=pmFixed;const pmK=pmDay*workDaysCount>0?pmFixed/(pmDay*workDaysCount):0;Object.keys(pmByMonth).forEach(k=>pmByMonth[k]*=pmK);
+  const prodHours=S.stages.reduce((a,s)=>a+(+s.hours||0),0);
+  const reworkHours=prodHours*(+S.reworkPct||0)/100;
+  const totalHours=prodHours+reworkHours+pmTotal;
+  const weeks=workDaysCount/days;
+  const phases=S.phases.map(p=>{const ss=res.filter(r=>r.phase===p.id);if(!ss.length)return null;
+    const h=ss.reduce((a,s)=>a+(+s.hours||0),0);
+    return {...p,start:ss[0].start,end:ss[ss.length-1].end,hours:h,stages:ss}}).filter(Boolean);
+  phases.forEach(p=>{p.rw=p.hours*(+S.reworkPct||0)/100;p.pm=prodHours?pmTotal*p.hours/prodHours:0;p.total=p.hours+p.rw+p.pm;p.cost=p.total*S.rateEUR});
+  phases.forEach(p=>{p.prog=p.hours?p.stages.reduce((a,s)=>a+(+s.hours||0)*pc(s.prog),0)/p.hours:0;p.actual=p.stages.reduce((a,s)=>a+(+s.actual||0),0);p.earned=p.hours*p.prog/100});
+  const progress=prodHours?phases.reduce((a,p)=>a+p.hours*p.prog,0)/prodHours:0;
+  const actualHours=phases.reduce((a,p)=>a+p.actual,0),earnedHours=prodHours*progress/100;
+  const base=totalHours*S.rateEUR, reserve=base*S.contingencyPct/100;
+  const months=Object.keys({...daily,...pmByMonth}).sort().map(k=>({k,date:new Date(k+'-01T00:00:00'),hours:(daily[k]||0)+(pmByMonth[k]||0)}));
+  return {res,phases,progress,actualHours,earnedHours,start:s0,end,weeks,workDaysCount,pmTotal,prodHours,reworkHours,totalHours,base,reserve,months,cap,pmDay,
+          hoursWeek:S.hoursPerDay*days,hoursMonth:S.hoursPerDay*days*52/12};
+}
+
+/* =====================================================================
+   SEÇÕES (slides)
+   ===================================================================== */
+const SECOES=[['capa',sCover],['contexto',sContext],['solucao',sSolution],['escopo',sScope],['cronograma',sGantt],['marcos',sMilestones],
+  ['treinamento',sTraining],['investimento',sInvestment],['faturamento',sBilling],['modelos_faturamento',sBilling2],['manutencao',sMaint],
+  ['prerequisitos',sPrereq],['proximos',sNext]];
+const navDe=id=>D.textos['nav.'+id]&&t(D.textos['nav.'+id])?D.textos['nav.'+id]:U.nav[id];
+const kicker=id=>`<div class="kicker">${W(navDe(id))}</div>`;
+
+function render(){
+  const R=schedule();prepararVariaveis(R);
+  document.documentElement.lang=lang;
+  document.title=D.projeto.barra||t(U.sub);
+  document.getElementById('brandTxt').textContent=D.projeto.barra||'';
+  document.getElementById('brandSub').textContent=t(tem('barra.subtitulo')?TXT('barra.subtitulo'):U.sub);
+  const seg=document.getElementById('langSeg');
+  seg.style.display=D.idiomas.length>1?'':'none';
+  seg.innerHTML=D.idiomas.map(l=>`<button data-lang="${l}" class="${l===lang?'on':''}">${l.toUpperCase()}</button>`).join('');
+  document.getElementById('hintBtn').style.display=temPT()&&lang!=='pt'&&D.idiomas.length>1?'':'none';
+  const pb=document.getElementById('presBtn');pb.textContent='▶ '+t(U.present);
+  const tb=document.getElementById('trackBtn');tb.style.display=S.mostrarAndamento===false?'none':'';
+  tb.textContent=t(document.body.classList.contains('tracking')?U.proposalBtn:U.progressBtn);
+  document.getElementById('pdfBtn').title=t(U.pdf);
+  const vis=SECOES.filter(([id])=>!S.secoesOcultas.includes(id));
+  document.getElementById('slides').innerHTML=vis.map(([id,f],i)=>`<section class="slide ${id==='capa'?'cover':''}" id="s${i}" data-secao="${id}">${f(R)}<div class="pg">${i+1} / ${vis.length}</div></section>`).join('');
+  document.getElementById('nav').innerHTML=vis.map(([id],i)=>`<a href="#s${i}" data-i="${i}">${i+1}. ${esc(t(navDe(id)))}</a>`).join('');
+  if(document.body.classList.contains('present')) showSlide(curSlide);
+  if(document.body.classList.contains('tracking')) renderTrack(R);
+}
+
+function sCover(R){
+  const C=D.consultor,K=D.cliente;
+  const contatos=K.contatos.map(c=>`<b>${esc(c.nome)}</b>`).join('');
+  return `<div class="co-logo"><img src="${LOGO}" alt="Vilela Digit"></div><div class="kicker">${WT('capa.kicker')}</div>
+  <h1>${WT('capa.titulo')}</h1>
+  ${tem('capa.subtitulo')?`<p class="lead">${WT('capa.subtitulo')}</p>`:''}
+  <div class="meta"><div>${W(U.preparedBy)}<b>${esc(C.nome)}</b><b>${esc(C.empresa)}</b><span style="display:block;font-size:13px;color:#c9d6e8;font-weight:400;margin-top:4px;line-height:1.5">${esc(t(C.cargo))}${C.cnpj?`<br>CNPJ ${esc(C.cnpj)}`:''}<br>${esc(C.telefone)}${C.telefone&&C.email?' · ':''}${esc(C.email)}<br>${esc(t(C.local))}</span></div>
+  <div>${W(U.preparedFor)}${contatos}<span style="display:block;font-size:13px;color:#c9d6e8;font-weight:400;margin-top:4px;line-height:1.5">${esc(K.nome)}</span></div>
+  <div>${W(U.duration)}<b>${nf(R.weeks,0)} ${t(U.weeks)}</b></div><div>${W(U.start)}<b>${dfmt(R.start)}</b></div><div>${W(U.golive)}<b>${dfmt(goLive(R))}</b></div></div>`;
+}
+function sContext(){
+  const ind=LST('contexto.indicadores');
+  return `${kicker('contexto')}
+  <h2 style="font-size:22px;line-height:1.35;text-wrap:pretty;margin-bottom:12px">${WT('contexto.titulo')}</h2>
+  ${tem('contexto.lead')?`<p class="lead">${WT('contexto.lead')}</p>`:''}
+  ${ind.length?`<div class="grid g4">${ind.map(x=>`<div class="tile"><div class="l">${WP(x.rotulo)}</div><div class="v">${esc(t(preencher(x.valor)))}</div><div class="d">${WP(x.detalhe)}</div></div>`).join('')}</div>`:''}
+  <div class="grid g2" style="margin-top:18px">
+   ${LST('contexto.problemas').length?`<div class="box"><h3>${WT('contexto.problemas_titulo')}</h3><ul>${ul('contexto.problemas')}</ul></div>`:''}
+   ${LST('contexto.ganhos').length?`<div class="box"><h3>${WT('contexto.ganhos_titulo')}</h3><ul>${ul('contexto.ganhos')}</ul></div>`:''}
+  </div>`;
+}
+function sSolution(){
+  const fl=LST('solucao.fluxo'),bl=LST('solucao.blocos');
+  return `${kicker('solucao')}
+  <h2>${WT('solucao.titulo')}</h2>
+  ${tem('solucao.lead')?`<p class="lead">${WT('solucao.lead')}</p>`:''}
+  ${fl.length?`<div class="flow">${fl.map((s,i)=>`<div class="st"><div class="n">${i+1}</div><h4>${WP(s.titulo)}</h4><p>${WP(s.texto)}</p></div>`).join('')}</div>`:''}
+  ${bl.length?`<div class="grid g3" style="margin-top:22px">${bl.map(b=>`<div class="box"><h3>${WP(b.titulo)}</h3><ul>${(b.itens||[]).map(x=>`<li>${WP(x)}</li>`).join('')}</ul></div>`).join('')}</div>`:''}`;
+}
+function sScope(R){
+  const max=Math.max(1,...R.phases.map(p=>p.hours));const big=[...R.phases].sort((a,b)=>b.hours-a.hours)[0]||{};
+  const rwLab={en:`Rework allowance (${nf(S.reworkPct,0,'en')}%)`,it:`Quota rilavorazioni (${nf(S.reworkPct,0,'it')}%)`,pt:`Retrabalho previsto (${nf(S.reworkPct,0,'pt')}%)`};
+  const mtLab={en:`After the project: monthly maintenance, ${nf(S.maintHours,0,'en')} h/month (see "Monthly maintenance")`,it:`Dopo il progetto: manutenzione mensile, ${nf(S.maintHours,0,'it')} h/mese (vedi "Manutenzione mensile")`,pt:`Após o projeto: manutenção mensal, ${nf(S.maintHours,0,'pt')} h/mês (ver "Manutenção mensal")`};
+  const comManut=!S.secoesOcultas.includes('manutencao')&&(+S.maintHours||0)>0;
+  return `${kicker('escopo')}
+  ${tem('escopo.lead')?`<p class="lead">${WT('escopo.lead')}</p>`:''}
+  ${R.phases.map(p=>`<div class="hb"><div>${W(p)}</div><div><div class="bar ${p.id===big.id?'acc':''}" style="width:${p.hours/max*100}%"></div></div><div class="v">${nf(p.hours)} h · ${Math.round(p.hours/Math.max(1,R.prodHours)*100)}%</div></div>`).join('')}
+  <div class="hb"><div>${W(rwLab)}</div><div><div class="bar" style="width:${R.reworkHours/max*100}%"></div></div><div class="v">${nf(R.reworkHours)} h</div></div>
+  <div class="hb"><div>${W(U.pm)}</div><div><div class="bar" style="width:${R.pmTotal/max*100}%"></div></div><div class="v">${nf(R.pmTotal)} h</div></div>
+  <div class="hb" style="border-top:2px solid var(--ink);margin-top:6px;padding-top:8px;font-weight:700"><div>${W(U.totalHours)}</div><div></div><div class="v" style="font-weight:700;color:var(--ink)">${nf(R.totalHours)} h</div></div>
+  <table class="tb" style="margin-top:22px"><thead><tr><th class="l">${W(U.stage)}</th><th>${W(U.hours)}</th><th>${W(U.start)}</th><th>${W(U.end)}</th>${TR()?`<th>${W(U.complete)}</th>${S.mostrarHorasGastas?`<th>${W(U.actualH)}</th>`:''}`:''}</tr></thead><tbody>
+  ${R.phases.map(p=>`<tr class="ph"><td><span class="sw" style="background:var(${p.c})"></span>${W(p)}</td><td>${nf(p.hours)}</td><td>${dfmt(p.start)}</td><td>${dfmt(p.end)}</td>${TR()?`<td>${nf(p.prog,0)}%</td>${S.mostrarHorasGastas?`<td>${nf(p.actual)}</td>`:''}`:''}</tr>`+p.stages.map(s=>`<tr><td style="padding-left:30px">${W(s)}</td><td>${nf(s.hours)}</td><td>${dfmt(s.start)}</td><td>${dfmt(s.end)}</td>${TR()?`<td>${nf(+s.prog||0,0)}%</td>${S.mostrarHorasGastas?`<td>${nf(+s.actual||0)}</td>`:''}`:''}</tr>`).join('')).join('')}
+  <tr><td>${W(rwLab)}</td><td>${nf(R.reworkHours)}</td><td></td><td></td>${TR()?`<td></td>${S.mostrarHorasGastas?'<td></td>':''}`:''}</tr>
+  <tr><td>${W(U.pm)}</td><td>${nf(R.pmTotal)}</td><td></td><td></td>${TR()?`<td></td>${S.mostrarHorasGastas?'<td></td>':''}`:''}</tr>
+  <tr class="tot"><td>${W(U.totalIncl)}</td><td>${nf(R.totalHours)}</td><td>${dfmt(R.start)}</td><td>${dfmt(R.end)}</td>${TR()?`<td>${nf(R.progress,0)}%</td>${S.mostrarHorasGastas?`<td>${nf(R.actualHours)}</td>`:''}`:''}</tr>
+  ${comManut?`<tr><td>${W(mtLab)}</td><td>${nf(S.maintHours)}/${t(U.mo)}</td><td>${dfmt(new Date(R.end.getFullYear(),R.end.getMonth()+1,1))}</td><td>${dfmt(new Date(R.end.getFullYear(),R.end.getMonth()+1+(+S.maintMonths||12),0))}</td>${TR()?`<td></td>${S.mostrarHorasGastas?'<td></td>':''}`:''}</tr>`:''}</tbody></table>`;
+}
+function sGantt(R){
+  const s0=R.start.getTime(),span=Math.max(1,R.end.getTime()-s0+864e5);
+  const pos=d=>(d.getTime()-s0)/span*100;
+  let mh='';const m=new Date(R.start.getFullYear(),R.start.getMonth(),1);
+  while(m<=R.end){const l=Math.max(0,pos(m)),nx=new Date(m.getFullYear(),m.getMonth()+1,1),r=Math.min(100,pos(nx));mh+=`<span style="left:${l}%;width:${r-l}%">${mfmt(m)}</span>`;m.setMonth(m.getMonth()+1)}
+  const grid=[];const g=new Date(R.start.getFullYear(),R.start.getMonth()+1,1);while(g<=R.end){grid.push(`<i class="gl" style="left:${pos(g)}%"></i>`);g.setMonth(g.getMonth()+1)}
+  const gl=grid.join('');
+  const dica=(o,a,b,h)=>temPT()?` data-pt="${esc(`${o.pt||t(o)} · ${dfmt(a,'pt')} → ${dfmt(b,'pt')} · ${nf(h,0,'pt')} h`)}"`:'';
+  let rows='';
+  R.phases.forEach(p=>{
+    const pg=pc(p.prog),L0=pos(p.start),Wd=Math.max(.4,pos(p.end)-pos(p.start)+100*864e5/span);
+    rows+=`<div class="gr phase"><div class="lab"><span class="sw" style="background:var(${p.c})"></span>${W(p)}<span class="lbl-h">${nf(p.hours)} h</span></div><div class="track">${gl}<div class="gb tr"${dica(p,p.start,p.end,p.hours)} style="left:${L0}%;width:${Wd}%;background:var(${p.c})"></div><div class="gp tr${L0+Wd>92?' end':''}" style="left:${L0}%;width:${Wd}%"><i style="width:${pg}%;background:var(${p.c})"></i><b>${nf(pg,0)}%</b></div></div></div>`;
+    p.stages.forEach(s=>{
+      const sp=pc(s.prog),R2=pos(s.end)+100*864e5/span;
+      rows+=`<div class="gr"><div class="lab" style="padding-left:30px">${W(s)}<span class="lbl-h">${nf(s.hours)} h</span></div><div class="track">${gl}<div class="gb tr"${dica(s,s.start,s.end,s.hours)} style="left:${pos(s.start)}%;width:${Math.max(.4,pos(s.end)-pos(s.start)+100*864e5/span)}%;background:var(${p.c})"></div>${TR()&&sp>0?`<span class="tr" style="position:absolute;top:50%;transform:translateY(-50%);${R2>90?`right:${100-pos(s.start)+0.6}%`:`left:calc(${R2}% + 6px)`};font-size:11px;font-weight:600;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums">${sp>=100?'✓ ':''}${nf(sp,0)}%</span>`:''}${s.ms?`<div class="ms tr"${temPT()&&s.ms.pt?` data-pt="${esc('◆ '+s.ms.pt+' · '+dfmt(s.end,'pt'))}"`:''} style="left:calc(${R2}% - 7px)"></div>`:''}</div></div>`;
+    });
+  });
+  rows+=`<div class="gr phase"><div class="lab">${W(U.pmWeekly)}<span class="lbl-h">${nf(R.pmTotal)} h</span></div><div class="track">${gl}<div class="gb" style="left:0;width:100%;background:var(--context)"></div></div></div>`;
+  const prog={en:`Overall progress: ${nf(R.progress,0,'en')}% of planned hours delivered`,it:`Avanzamento complessivo: ${nf(R.progress,0,'it')}% delle ore pianificate`,pt:`Evolução geral: ${nf(R.progress,0,'pt')}% das horas planejadas entregues`};
+  const nota={en:`Milestone. Hover a bar for dates and hours. Durations include the ${nf(S.reworkPct,0,'en')}% rework allowance.`,it:`Milestone. Passa il mouse su una barra per date e ore. Le durate includono la quota rilavorazioni del ${nf(S.reworkPct,0,'it')}%.`,pt:`Marco. Passe o mouse na barra para ver datas e horas. As durações incluem ${nf(S.reworkPct,0,'pt')}% de retrabalho.`};
+  return `${kicker('cronograma')}
+  <h2>${WT('cronograma.titulo')}</h2>
+  ${tem('cronograma.lead')?`<p class="lead">${WT('cronograma.lead')}</p>`:''}
+  <div class="gantt"><div class="gh"><div class="lab">${W(U.phaseStage)}</div><div class="months">${mh}</div></div>${rows}</div>
+  <div class="glg"><span><em style="background:var(--p4);opacity:.55;height:6px"></em>${W(U.planned)}</span><span><em style="background:linear-gradient(90deg,var(--p4) 60%,var(--grid) 60%);height:10px"></em>${W(U.delivered)}</span><span style="color:var(--ink-2);font-weight:600">${W(prog)}</span></div>
+  <p style="font-size:12.5px;color:var(--muted);margin-top:6px">◆ ${W(nota)}</p>`;
+}
+function sMilestones(R){
+  const ms=R.res.filter(r=>r.ms);
+  return `${kicker('marcos')}
+  <h2>${WT('marcos.titulo')}</h2>
+  ${tem('marcos.lead')?`<p class="lead">${WT('marcos.lead')}</p>`:''}
+  <table class="tb"><thead><tr><th class="l">${W(U.phase)}</th><th class="l">${W(U.deliverable)}</th><th>${W(U.date)}</th></tr></thead><tbody>
+  ${R.phases.map(p=>`<tr><td class="l"><span class="sw" style="background:var(${p.c})"></span>${W(p)}</td><td class="l">${WP(D.entregas[p.id]&&t(D.entregas[p.id])?D.entregas[p.id]:U.delivDefault)}</td><td>${dfmt(p.end)}</td></tr>`).join('')}
+  </tbody></table>
+  ${ms.length?`<div class="grid g3" style="margin-top:20px">${ms.map(m=>`<div class="tile"><div class="l">◆ ${W(m.ms)}</div><div class="v" style="font-size:24px">${dfmt(m.end)}</div><div class="d">${W(m)}</div></div>`).join('')}</div>`:''}`;
+}
+function sTraining(){
+  const ps=LST('treinamento.passos');
+  return `${kicker('treinamento')}
+  <h2>${WT('treinamento.titulo')}</h2>
+  ${tem('treinamento.lead')?`<p class="lead">${WT('treinamento.lead')}</p>`:''}
+  ${ps.length?`<div class="grid g3">${ps.map(a=>`<div class="box"><h3>${WP(a.titulo)}</h3><div style="color:var(--ink-2);font-size:14px">${WP(a.texto)}</div></div>`).join('')}</div>`:''}`;
+}
+function sInvestment(R){
+  const max=Math.max(1,...R.phases.map(p=>p.cost));
+  return `${kicker('investimento')}
+  <h2>${WT('investimento.titulo')}</h2>
+  ${tem('investimento.lead')?`<p class="lead">${WT('investimento.lead')}</p>`:''}
+  <div class="grid g3">
+   <div class="tile"><div class="l">${W(U.hours)}</div><div class="v">${nf(R.totalHours)}</div></div>
+   <div class="tile"><div class="l">${W(U.duration)}</div><div class="v">${nf(R.weeks,0)} ${t(U.weeks)}</div><div class="d">${dfmt(R.start)} → ${dfmt(R.end)}</div></div>
+   <div class="tile"><div class="l">${W(U.investment)}</div><div class="v" style="color:var(--accent)">${eur(R.base)}</div><div class="d">${WT('investimento.nota_valor')}</div></div>
+  </div>
+  <div style="margin-top:24px">${R.phases.map(p=>`<div class="hb"><div>${W(p)}</div><div><div class="bar ${p.cost===max?'acc':''}" style="width:${p.cost/max*100}%"></div></div><div class="v">${eur(p.cost)}</div></div>`).join('')}</div>
+  ${tem('investimento.insight')?`<div class="insight">${WT('investimento.insight')}</div>`:''}`;
+}
+function sBilling(R){
+  let acc=0;const dep=R.base*(+S.depositPct||0)/100;
+  const depLab={en:`Down payment on signing (${nf(S.depositPct,0,'en')}%), deducted from the following invoices`,it:`Anticipo alla firma (${nf(S.depositPct,0,'it')}%), detratto dalle fatture successive`,pt:`Sinal na assinatura (${nf(S.depositPct,0,'pt')}%), abatido nas faturas seguintes`};
+  const meses={en:`over ${R.months.length} months`,it:`su ${R.months.length} mesi`,pt:`em ${R.months.length} meses`};
+  const rows=`<table class="tb"><thead><tr><th class="l">#</th><th class="l">${W(U.msApproval)}</th><th>${W(U.expDate)}</th><th>${W(U.hours)}</th><th>${W(U.amount)}</th><th>${W(U.cumulative)}</th></tr></thead><tbody>
+  ${dep?`<tr><td class="l">0</td><td class="l">${W(depLab)}</td><td>${dfmt(R.start)}</td><td>—</td><td>${eur(dep)}</td><td>—</td></tr>`:''}
+  ${R.phases.map((p,i)=>{acc+=p.cost;return `<tr><td class="l">${i+1}</td><td class="l"><span class="sw" style="background:var(${p.c})"></span>${W(p)}</td><td>${dfmt(p.end)}</td><td>${nf(p.total)}</td><td>${eur(p.cost)}</td><td>${Math.round(acc/Math.max(1,R.base)*100)}%</td></tr>`}).join('')}<tr class="tot"><td></td><td class="l">${W(U.total)}</td><td></td><td>${nf(R.totalHours)}</td><td>${eur(R.base)}</td><td>100%</td></tr></tbody></table>`;
+  return `${kicker('faturamento')}
+  <h2>${WT('faturamento.titulo')}</h2>
+  ${rows}
+  <div class="grid g3" style="margin-top:20px">
+   <div class="tile"><div class="l">${W(U.downPayment)}</div><div class="v">${eur(dep)}</div><div class="d">${W(U.onSigning)}</div></div>
+   <div class="tile"><div class="l">${W(U.payment)}</div><div class="v">${esc(S.prazoPagamentoDias)} ${t(U.days)}</div><div class="d">${W(U.payAfter)}</div></div>
+   <div class="tile"><div class="l">${W(U.avgMonth)}</div><div class="v">${eur(R.base/Math.max(1,R.months.length))}</div><div class="d">${W(meses)}</div></div>
+  </div>`;
+}
+function sBilling2(R){
+  const max=Math.max(1,...R.months.map(m=>m.hours));
+  const box=(k,on)=>`<div class="box" style="${on?'border-color:var(--accent);border-width:2px':''}"><h3>${WT('fat.'+k+'_titulo')}${on?` <span style="color:var(--accent)">✓ ${t(U.proposed)}</span>`:''}</h3><div style="color:var(--ink-2);font-size:14px">${WT('fat.'+k+'_texto')}</div><div style="font-size:13px;margin-top:8px">${WT('fat.'+k+'_pro')}</div></div>`;
+  return `${kicker('modelos_faturamento')}
+  <h2>${WT(S.billing==='monthly'?'fat.titulo_mensal':'fat.titulo_marco')}</h2>
+  <div class="grid g3">${box('a',S.billing!=='monthly')}${box('b',S.billing==='monthly')}${box('c',false)}</div>
+  <div class="grid g2" style="margin-top:20px;align-items:start">
+   <div class="box"><h3>${W(U.modelB)}</h3>
+    <div class="mchart" style="height:150px">${R.months.map(m=>`<div class="c"><div class="b" style="height:${m.hours/max*100}%"><span>${eur(m.hours*S.rateEUR)}</span></div></div>`).join('')}</div><div class="mlabels">${R.months.map(m=>`<div>${mfmt(m.date)}<br>${nf(m.hours)} h</div>`).join('')}</div></div>
+   ${LST('faturamento.regras').length?`<div class="box"><h3>${W(U.billingTerms)}</h3><ul style="font-size:13.5px">${ul('faturamento.regras')}</ul></div>`:''}
+  </div>`;
+}
+function sMaint(){
+  const h=+S.maintHours||0,rate=S.rateEUR,mo=Math.max(1,+S.maintMonths||12);
+  const plans=[Math.max(1,Math.round(h/2)),h,Math.round(h*1.5)];
+  const emMeses={en:`in ${mo} months`,it:`in ${mo} mesi`,pt:`em ${mo} meses`};
+  return `${kicker('manutencao')}
+  <h2>${WT('manutencao.titulo')}</h2>
+  ${tem('manutencao.lead')?`<p class="lead">${WT('manutencao.lead')}</p>`:''}
+  <div class="grid g3">${plans.map((p,i)=>`<div class="tile" style="${i===1?'border:2px solid var(--accent)':''}"><div class="l">${W(U.plans[i])}${i===1?` · <span style="color:var(--accent)">${t(U.recommended)}</span>`:''}</div><div class="v" ${i===1?'style="color:var(--accent)"':''}>${eur(p*rate)}<span style="font-size:15px;color:var(--ink-2)"> /${t(U.month)}</span></div><div class="d">${nf(p)} h/${t(U.month)} · ${eur(p*rate*mo)} ${W(emMeses)}</div></div>`).join('')}</div>
+  <div class="grid g2" style="margin-top:20px;align-items:start">
+   ${LST('manutencao.inclui').length?`<div class="box"><h3>${W(U.included)}</h3><ul style="font-size:13.5px">${ul('manutencao.inclui')}</ul></div>`:''}
+   ${LST('manutencao.condicoes').length?`<div class="box"><h3>${W(U.terms)}</h3><ul style="font-size:13.5px">${ul('manutencao.condicoes')}</ul></div>`:''}
+  </div>`;
+}
+function sPrereq(){
+  const it=LST('prerequisitos.itens');
+  return `${kicker('prerequisitos')}
+  <h2>${WT('prerequisitos.titulo')}</h2>
+  ${tem('prerequisitos.lead')?`<p class="lead">${WT('prerequisitos.lead')}</p>`:''}
+  ${it.length?`<table class="tb"><thead><tr><th class="l">${W(U.item)}</th><th class="l">${W(U.detail)}</th><th class="l">${W(U.providedBy)}</th></tr></thead><tbody>
+  ${it.map(r=>`<tr><td class="l"><b>${WP(r.item)}</b></td><td class="l">${WP(r.detalhe)}</td><td class="l">${WP(r.responsavel)}</td></tr>`).join('')}</tbody></table>`:''}
+  ${tem('prerequisitos.insight')?`<div class="insight">${WT('prerequisitos.insight')}</div>`:''}`;
+}
+function sNext(R){
+  const st=LST('proximos.passos'),C=D.consultor,K=D.cliente;
+  return `${kicker('proximos')}
+  <h2>${WT('proximos.titulo')}</h2>
+  ${tem('proximos.lead')?`<p class="lead">${WT('proximos.lead')}</p>`:''}
+  ${st.length?`<div class="grid" style="grid-template-columns:repeat(${Math.min(5,st.length)},1fr)">${st.map((s,i)=>`<div class="tile"><div class="v" style="color:var(--accent)">${i+1}</div><div style="font-size:15px;margin-top:6px">${WP(s)}</div></div>`).join('')}</div>`:''}
+  <div class="grid g3" style="margin-top:24px">
+   <div class="tile"><div class="l">${W(U.duration)}</div><div class="v">${nf(R.weeks,0)} ${t(U.wk)}</div></div>
+   <div class="tile"><div class="l">${W(U.effort)}</div><div class="v">${nf(R.totalHours)} h</div></div>
+   <div class="tile"><div class="l">${W(U.investment)}</div><div class="v" style="color:var(--accent)">${eur(R.base)}</div></div>
+  </div>
+  <div class="box" style="margin-top:26px;display:flex;gap:28px;flex-wrap:wrap;align-items:center"><div class="co-logo" style="border:1px solid var(--border)"><img src="${LOGO}" alt="Vilela Digit"></div><div><b style="font-size:17px">${esc(C.nome)}</b><div style="color:var(--ink-2)">${esc(t(C.cargo))}</div><div style="margin-top:6px;font-size:13.5px"><b>${esc(C.empresa)}</b>${C.cnpj?`<br>${W(U.taxId)}: ${esc(C.cnpj)}`:''}<br><span style="color:var(--ink-2)">${esc(C.endereco1)}<br>${esc(C.endereco2)}</span></div></div>${C.telefone?`<div>${W(U.phone)}<br><a href="tel:${esc(String(C.telefone).replace(/[^+\d]/g,''))}" style="color:var(--accent);font-weight:600">${esc(C.telefone)}</a></div>`:''}${C.email?`<div>E-mail<br><a href="mailto:${esc(C.email)}" style="color:var(--accent);font-weight:600">${esc(C.email)}</a></div>`:''}</div>
+  ${K.contatos.length?`<div class="box" style="margin-top:12px;display:flex;gap:28px;flex-wrap:wrap;align-items:baseline"><div><b style="font-size:15px">${W(U.clientContacts)}</b><div style="color:var(--ink-2)">${esc(K.nome)}</div></div>${K.contatos.map(c=>`<div><b>${esc(c.nome)}</b>${c.email?`<br><a href="mailto:${esc(c.email)}" style="color:var(--accent)">${esc(c.email)}</a>`:''}</div>`).join('')}</div>`:''}`;
+}
+
+/* =====================================================================
+   ANDAMENTO (o que o cliente vê no botão "Progress")
+   ===================================================================== */
+function trackGantt(R){
+  const s0=R.start.getTime(),span=Math.max(1,R.end.getTime()-s0+864e5),pos=d=>(d.getTime()-s0)/span*100,day=100*864e5/span;
+  const today=new Date();today.setHours(0,0,0,0);const tp=pos(today);
+  let mh='';const m=new Date(R.start.getFullYear(),R.start.getMonth(),1);
+  while(m<=R.end){const l=Math.max(0,pos(m)),nx=new Date(m.getFullYear(),m.getMonth()+1,1),r=Math.min(100,pos(nx));mh+=`<span style="left:${l}%;width:${r-l}%">${mfmt(m)}</span>`;m.setMonth(m.getMonth()+1)}
+  const tl=tp>=0&&tp<=100?`<i style="position:absolute;top:0;bottom:0;left:${tp}%;width:2px;background:#d03b3b;z-index:2" title="${esc(t(U.tkToday))}"></i>`:'';
+  const bar=(o,c,pg,ph)=>{const L0=pos(o.start),Wd=Math.max(.4,pos(o.end)-pos(o.start)+day);const late=pg<100&&today>o.end;
+    return `<div class="gb" style="left:${L0}%;width:${Wd}%;background:var(${c});opacity:.25${ph?';top:9px;height:8px':''}"></div>${pg>0?`<div class="gb" style="left:${L0}%;width:${Wd*pg/100}%;background:var(${c})${ph?';top:9px;height:8px':''}"></div>`:''}<span style="position:absolute;top:50%;transform:translateY(-50%);${L0+Wd>86?`right:${100-L0+0.5}%`:`left:calc(${L0+Wd}% + 6px)`};font-size:11px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:${late?'#b3261e':'var(--ink)'}">${pg>=100?'✓ ':''}${nf(pg,0)}%${late?' · '+esc(t(U.tkLate)):''}</span>`};
+  let rows='';
+  R.phases.forEach(p=>{rows+=`<div class="gr phase"><div class="lab"><span class="sw" style="background:var(${p.c})"></span>${esc(t(p))}<span class="lbl-h">${nf(p.hours,0)} h</span></div><div class="track">${tl}${bar(p,p.c,pc(p.prog),1)}</div></div>`;
+    p.stages.forEach(s=>{rows+=`<div class="gr"><div class="lab" style="padding-left:30px" title="${esc(t(s))}">${esc(t(s))}<span class="lbl-h">${nf(+s.hours||0,0)} h</span></div><div class="track">${tl}${bar(s,p.c,pc(s.prog),0)}</div></div>`})});
+  return `<div class="gantt"><div class="gh"><div class="lab">${esc(t(U.phaseStage))}</div><div class="months">${mh}</div></div>${rows}</div>
+  <div class="tk-lg"><span><em style="background:var(--p4);opacity:.25"></em>${esc(t(U.planned))}</span><span><em style="background:var(--p4)"></em>${esc(t(U.tkDone))} (%)</span><span><em style="background:#d03b3b;width:2px;height:14px"></em>${esc(t(U.tkToday))}</span><span>${esc(t(U.tkLateNote))}</span></div>`;
+}
+function renderTrack(R){
+  const gasto=S.mostrarHorasGastas===true;
+  const today=new Date();today.setHours(0,0,0,0);
+  const prox=R.res.filter(r=>r.ms&&pc(r.prog)<100).sort((a,b)=>a.end-b.end)[0];
+  const mx=Math.max(1,...R.phases.map(p=>p.hours));
+  const barra=p=>`<div class="tk-row"><div>${esc(t(p))}</div><div class="bw"><div style="position:absolute;left:0;top:0;bottom:0;width:${p.hours/mx*100}%;background:var(${p.c});opacity:.22;border-radius:4px"></div><div class="e" style="width:${p.earned/mx*100}%;background:var(${p.c})"></div></div><div class="n">${nf(p.prog,0)}% · ${dfmt(p.end)}</div></div>`;
+  const linhas=R.phases.map(p=>`<tr class="ph"><td>${esc(t(p))}</td><td>${nf(p.hours,0)}</td><td>${nf(p.prog,0)}%</td><td>${dfmt(p.end)}</td>${gasto?`<td>${nf(p.actual,1)}</td>`:''}</tr>`+p.stages.map(s=>`<tr><td style="padding-left:24px">${esc(t(s))}${s.ms?' ◆':''}</td><td>${nf(+s.hours||0,0)}</td><td>${nf(pc(s.prog),0)}%</td><td style="${pc(s.prog)<100&&today>s.end?'color:#b3261e;font-weight:600':''}">${dfmt(s.end)}</td>${gasto?`<td>${nf(+s.actual||0,1)}</td>`:''}</tr>`).join('')).join('');
+  document.getElementById('trackView').innerHTML=`
+  <div class="kicker">${esc(t(U.tkKicker))}</div>
+  <h2 style="margin:4px 0 0">${esc(t(U.tkTitle))}</h2>
+  <p class="lead" style="margin-top:6px">${esc(t(U.tkLead))}</p>
+  <div class="tk-cards">
+   <div class="tk-card"><div class="l">${esc(t(U.tkOverall))}</div><div class="v" style="color:var(--accent)">${nf(R.progress,0)}%</div><div class="d">${nf(R.earnedHours,0)} / ${nf(R.prodHours,0)} h</div></div>
+   <div class="tk-card"><div class="l">${esc(t(U.start))} → ${esc(t(U.golive))}</div><div class="v" style="font-size:20px">${dfmt(R.start)}</div><div class="d">→ ${dfmt(goLive(R))}</div></div>
+   ${prox?`<div class="tk-card"><div class="l">${esc(t(U.tkNext))}</div><div class="v" style="font-size:20px">${dfmt(prox.end)}</div><div class="d">◆ ${esc(t(prox.ms))}</div></div>`:''}
+   ${gasto?`<div class="tk-card"><div class="l">${esc(t(U.tkSpent))}</div><div class="v">${nf(R.actualHours,1)} h</div></div>`:''}
+  </div>
+  <div class="tk-box">${R.phases.map(barra).join('')}</div>
+  <div class="tk-box"><h3 style="margin:0 0 10px;font-size:16px">${esc(t(U.tkGantt))}</h3>${trackGantt(R)}</div>
+  <div class="tk-box"><h3 style="margin:0 0 10px;font-size:16px">${esc(t(U.tkStages))}</h3>
+   <table class="tb tk-tb"><thead><tr><th class="l">${esc(t(U.stage))}</th><th>${esc(t(U.tkPlannedH))}</th><th>${esc(t(U.complete))}</th><th>${esc(t(U.tkPlannedEnd))}</th>${gasto?`<th>${esc(t(U.tkSpent))}</th>`:''}</tr></thead><tbody>${linhas}
+   <tr class="tot"><td>${esc(t(U.total))}</td><td>${nf(R.prodHours,0)}</td><td>${nf(R.progress,0)}%</td><td>${dfmt(R.end)}</td>${gasto?`<td>${nf(R.actualHours,1)}</td>`:''}</tr></tbody></table>
+  </div>`;
+}
+
+/* =====================================================================
+   INTERFACE: idioma, dicas em PT, PDF, andamento, modo apresentação
+   ===================================================================== */
+document.getElementById('langSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lang=b.dataset.lang;render()});
+document.getElementById('hintBtn').onclick=()=>{hints=!hints;document.body.classList.toggle('nohint',!hints);document.getElementById('hintBtn').style.opacity=hints?1:.5};
+document.getElementById('pdfBtn').onclick=()=>{const wasP=document.body.classList.contains('present');if(wasP)exitPresent();if(document.body.classList.contains('tracking'))document.getElementById('trackBtn').click();setTimeout(()=>{try{window.print()}catch(e){alert('Use Ctrl+P / Cmd+P → "Save as PDF".')}},wasP?300:50)};
+document.getElementById('trackBtn').onclick=()=>{const on=document.body.classList.toggle('tracking');document.getElementById('trackBtn').classList.toggle('on',on);render();window.scrollTo(0,0)};
+let curSlide=0;
+function showSlide(i){const ss=document.querySelectorAll('section.slide');curSlide=Math.max(0,Math.min(ss.length-1,i));ss.forEach((s,j)=>s.classList.toggle('cur',j===curSlide))}
+document.getElementById('presBtn').onclick=()=>{
+  if(document.body.classList.contains('tracking'))document.getElementById('trackBtn').click();
+  let best=0;document.querySelectorAll('section.slide').forEach((s,i)=>{if(s.getBoundingClientRect().top<innerHeight*0.45)best=i});
+  document.body.classList.add('present');showSlide(best);
+  try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}catch(e){}
+};
+function exitPresent(){document.body.classList.remove('present');document.querySelectorAll('section.slide').forEach(s=>s.classList.remove('cur'));try{document.fullscreenElement&&document.exitFullscreen()}catch(e){};setTimeout(()=>document.getElementById('s'+curSlide)?.scrollIntoView(),50)}
+document.getElementById('exitP').onclick=exitPresent;
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('present'))exitPresent()});
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('input,select,textarea'))return;
+  if(!document.body.classList.contains('present'))return;
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();showSlide(curSlide+1)}
+  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();showSlide(curSlide-1)}
+  if(e.key==='Escape')exitPresent();
+});
+document.addEventListener('click',e=>{if(document.body.classList.contains('present')&&e.target.closest('section.slide')&&!e.target.closest('.tr')){showSlide(curSlide+(e.clientX>innerWidth/2?1:-1))}});
+addEventListener('scroll',()=>{if(document.body.classList.contains('present'))return;let a=0;document.querySelectorAll('section.slide').forEach((s,i)=>{if(s.getBoundingClientRect().top<160)a=i});document.querySelectorAll('#nav a').forEach((l,i)=>l.classList.toggle('on',i===a))},{passive:true});
+const tip=document.getElementById('tip');
+document.addEventListener('mouseover',e=>{const el=e.target.closest('[data-pt]');if(!el||!hints||lang==='pt'){tip.classList.remove('on');return}
+  tip.innerHTML=`<span class="flag">PT-BR</span>${esc(el.dataset.pt)}`;tip.classList.add('on')});
+document.addEventListener('mousemove',e=>{if(!tip.classList.contains('on'))return;const x=Math.min(e.clientX+14,innerWidth-tip.offsetWidth-8),y=e.clientY+18+tip.offsetHeight>innerHeight?e.clientY-tip.offsetHeight-10:e.clientY+18;tip.style.left=x+'px';tip.style.top=y+'px'});
+
+/* Pré-visualização ao vivo: o editor do painel admin envia os dados novos sem recarregar. */
+addEventListener('message',e=>{if(e.source!==parent)return;const m=e.data||{};if(m.tipo!=='vd-dados')return;
+  D=normalizar(m.dados);S=D.config;if(!D.idiomas.includes(lang))lang=D.idiomaPadrao;render()});
+
+render();
+</script>
+</body>
+</html>

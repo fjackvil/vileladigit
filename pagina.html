@@ -89,7 +89,7 @@
   // O banco só devolve a página se a pessoa tiver acesso ao projeto (RLS).
   const { data: pagina, error } = await sb
     .from("paginas")
-    .select("id, titulo, html, estado, visivel_cliente, projetos(nome)")
+    .select("id, titulo, html, estado, modelo, visivel_cliente, projetos(nome)")
     .eq("id", paginaId)
     .maybeSingle();
 
@@ -102,7 +102,18 @@
   document.getElementById("tituloPagina").textContent = pagina.titulo;
   document.getElementById("nomeProjeto").textContent = pagina.projetos ? pagina.projetos.nome : "";
 
-  if (ehAdmin) {
+  if (ehAdmin && pagina.modelo) {
+    // Página feita pelo modelo: a edição é no editor do painel admin.
+    document.getElementById("voltar").href = "admin-projetos.html";
+    document.getElementById("voltar").textContent = "← Projetos";
+    document.getElementById("selosModo").innerHTML = pagina.visivel_cliente
+      ? '<span class="modo modo-leitura">Como o cliente vê</span>'
+      : '<span class="modo modo-edicao" title="Esta página está escondida do cliente">Rascunho</span>';
+    const editar = document.getElementById("trocarModo");
+    editar.hidden = false;
+    editar.textContent = "Editar dados";
+    editar.href = `admin-editor.html?id=${pagina.id}`;
+  } else if (ehAdmin) {
     document.getElementById("voltar").href = "admin-projetos.html";
     document.getElementById("voltar").textContent = "← Projetos";
     document.getElementById("selosModo").innerHTML = podeEditar
@@ -185,6 +196,16 @@
   // No modo leitura, esconde os controles de admin que a própria página já marca.
   const ESCONDER_ADMIN = `<style>.admin-only,#admin,#adminBtn,#trackBtn,#trackView,#cloudSt{display:none!important}</style>`;
 
+  // Coloca os dados do projeto no início do modelo (window.__DADOS__).
+  // O replace de "<" impede que um texto com "</script>" quebre a página.
+  function injetarDados(html, dados) {
+    const script = `<script>window.__DADOS__=${JSON.stringify(dados).replace(/</g, "\\u003c")};<\/script>`;
+    const posicaoHead = html.search(/<head[^>]*>/i);
+    if (posicaoHead < 0) return script + html;
+    const fimHead = html.indexOf(">", posicaoHead) + 1;
+    return html.slice(0, fimHead) + script + html.slice(fimHead);
+  }
+
   function montarDocumento(html) {
     const injetar = `<script>${CONECTOR}<\/script>${podeEditar ? "" : ESCONDER_ADMIN}`;
     const posicaoHead = html.search(/<head[^>]*>/i);
@@ -238,7 +259,20 @@
     }
   });
 
-  iframe.srcdoc = montarDocumento(pagina.html || "<p style='font-family:sans-serif;padding:40px'>Empty page.</p>");
+  if (pagina.modelo) {
+    // Página feita pelo MODELO: busca o modelo do site e entrega os dados prontos.
+    // Não precisa do conector: o modelo só exibe, não grava nada.
+    try {
+      const resposta = await fetch(`modelos/${encodeURIComponent(pagina.modelo)}.html`, { cache: "no-cache" });
+      if (!resposta.ok) throw new Error("modelo não encontrado");
+      iframe.srcdoc = injetarDados(await resposta.text(), pagina.estado || {});
+    } catch (e) {
+      mostrarErro("This page could not be loaded. Please try again later.");
+      return;
+    }
+  } else {
+    iframe.srcdoc = montarDocumento(pagina.html || "<p style='font-family:sans-serif;padding:40px'>Empty page.</p>");
+  }
   quadro.appendChild(iframe);
 })();
 </script>

@@ -64,6 +64,11 @@
             <select id="projStatus"></select>
           </div>
         </div>
+        <div class="campo" style="max-width:520px">
+          <label for="projOrigem">Partir de</label>
+          <select id="projOrigem"><option value="">Projeto em branco</option></select>
+          <span class="campo-dica">Copiando um projeto, as páginas e os dados vêm prontos para você ajustar. Elas ficam escondidas do cliente (rascunho) e o andamento começa em zero. Os acessos de usuários não são copiados.</span>
+        </div>
         <button type="submit" id="botaoCriarProjeto" class="btn btn-primary">Criar projeto</button>
       </form>
     </section>
@@ -107,7 +112,7 @@
     const [resUsuarios, resProjetos] = await Promise.all([
       sb.rpc("admin_listar_usuarios"),
       sb.from("projetos")
-        .select("id, nome, descricao, status, criado_em, projeto_acessos(usuario_id), paginas(id, titulo, tipo, ordem, visivel_cliente, atualizado_em)")
+        .select("id, nome, descricao, status, criado_em, projeto_acessos(usuario_id), paginas(id, titulo, tipo, modelo, ordem, visivel_cliente, atualizado_em)")
         .order("criado_em", { ascending: false }),
     ]);
     if (resUsuarios.error || resProjetos.error) {
@@ -116,6 +121,11 @@
     }
     clientes = (resUsuarios.data || []).filter((u) => u.papel === "cliente");
     projetos = resProjetos.data || [];
+    // Lista "Partir de" do formulário de novo projeto
+    const origem = document.getElementById("projOrigem");
+    const escolhido = origem.value;
+    origem.innerHTML = '<option value="">Projeto em branco</option>' +
+      projetos.map((p) => `<option value="${p.id}"${p.id === escolhido ? " selected" : ""}>Copiar de: ${escapar(p.nome)}</option>`).join("");
     desenhar();
   }
 
@@ -137,15 +147,17 @@
         <th>Página</th><th>Visível ao cliente</th><th>Atualizada</th><th></th></tr></thead><tbody>` +
       paginas.map((pg) => `
         <tr>
-          <td><div class="nome">${escapar(pg.titulo)}</div><div class="email">${TIPOS[pg.tipo] || pg.tipo}</div></td>
+          <td><div class="nome">${escapar(pg.titulo)}</div><div class="email">${TIPOS[pg.tipo] || pg.tipo}${pg.modelo ? ` · modelo “${escapar(pg.modelo)}”` : " · HTML enviado"}</div></td>
           <td><label class="interruptor"><input type="checkbox" data-acao="visivel" data-pagina="${pg.id}"${pg.visivel_cliente ? " checked" : ""}> ${pg.visivel_cliente ? "Sim" : "Não (rascunho)"}</label></td>
           <td class="data">${formatarData(pg.atualizado_em)}</td>
-          <td class="acoes">
+          <td class="acoes">${pg.modelo ? `
+            <a class="btn btn-primary btn-pequeno" href="admin-editor.html?id=${pg.id}">Editar dados</a>
+            <a class="btn btn-ghost btn-pequeno" href="pagina.html?id=${pg.id}">Ver como cliente</a>` : `
             <a class="btn btn-primary btn-pequeno" href="pagina.html?id=${pg.id}">Abrir / editar</a>
             <a class="btn btn-ghost btn-pequeno" href="pagina.html?id=${pg.id}&modo=cliente">Ver como cliente</a>
             <label class="btn btn-ghost btn-pequeno" title="Envia uma nova versão do arquivo HTML. Os dados editados são mantidos.">
               Trocar HTML<input type="file" accept=".html,.htm" hidden data-acao="trocar-html" data-pagina="${pg.id}">
-            </label>
+            </label>`}
             <button class="btn btn-perigo btn-pequeno" data-acao="excluir-pagina" data-pagina="${pg.id}">Excluir</button>
           </td>
         </tr>`).join("") + "</tbody></table></div>";
@@ -175,9 +187,14 @@
         <h3 style="margin-top:22px">Páginas</h3>
         ${desenharPaginas(p)}
 
+        <div style="margin-top:16px">
+          <button class="btn btn-primary btn-pequeno" data-acao="nova-proposta" data-projeto="${p.id}">+ Proposta pelo modelo</button>
+          <span class="campo-dica" style="margin-left:8px">Cria a proposta (cronograma, custos, andamento) para preencher no editor.</span>
+        </div>
+
         <form class="nova-pagina" data-projeto="${p.id}" novalidate>
-          <div class="campo"><label>Título da página</label><input type="text" name="titulo" placeholder="Ex.: Proposal, Schedule & Costs" required></div>
-          <div class="campo"><label>Tipo</label><select name="tipo">${opcoes(TIPOS, "proposta")}</select></div>
+          <div class="campo"><label>Ou envie uma página HTML pronta (ex.: mockups)</label><input type="text" name="titulo" placeholder="Título, ex.: Power BI Mockups" required></div>
+          <div class="campo"><label>Tipo</label><select name="tipo">${opcoes(TIPOS, "mockup")}</select></div>
           <div class="campo"><label>Arquivo HTML</label><input type="file" name="arquivo" accept=".html,.htm" required></div>
           <button type="submit" class="btn btn-ghost">Adicionar página</button>
         </form>
@@ -247,6 +264,17 @@
     const botao = evento.target.closest("button[data-acao]");
     if (!botao) return;
 
+    if (botao.dataset.acao === "nova-proposta") {
+      const projeto = projetos.find((x) => x.id === botao.dataset.projeto);
+      const ordem = Math.max(0, ...(projeto.paginas || []).map((pg) => pg.ordem)) + 1;
+      aviso(avisoGeral, "");
+      const { data, error } = await sb.from("paginas")
+        .insert({ projeto_id: projeto.id, titulo: "Proposal", tipo: "proposta", modelo: "proposta", estado: dadosIniciaisProposta(), ordem, visivel_cliente: false })
+        .select("id").single();
+      if (error) { aviso(avisoGeral, "Erro: " + error.message); return; }
+      location.href = `admin-editor.html?id=${data.id}`;
+    }
+
     if (botao.dataset.acao === "excluir-pagina") {
       if (!confirm("Excluir esta página? Os dados e o histórico dela também serão apagados. Esta ação não pode ser desfeita.")) return;
       await executar(() => sb.from("paginas").delete().eq("id", botao.dataset.pagina), "Página excluída.");
@@ -292,15 +320,61 @@
     const status = document.getElementById("projStatus").value;
     if (!nome) { aviso(avisoNovo, "Informe o nome do projeto."); return; }
 
+    const origem = document.getElementById("projOrigem").value;
+
     await comBotaoOcupado(document.getElementById("botaoCriarProjeto"), "Criando…", async () => {
-      const { error } = await sb.from("projetos").insert({ nome, descricao, status });
-      if (error) { aviso(avisoNovo, "Erro: " + error.message); return; }
-      aviso(avisoNovo, `Projeto "${nome}" criado. Agora libere o acesso e adicione as páginas abaixo.`, "ok");
+      if (origem) {
+        // Copia páginas e dados do projeto escolhido (função duplicar_projeto do banco)
+        const { data: novoId, error } = await sb.rpc("duplicar_projeto", { p_origem: origem, p_nome: nome, p_descricao: descricao });
+        if (error) { aviso(avisoNovo, "Erro: " + error.message); return; }
+        await sb.from("projetos").update({ status }).eq("id", novoId);
+        aviso(avisoNovo, `Projeto "${nome}" criado a partir da cópia. As páginas estão como rascunho: edite os dados, libere o acesso e marque "Visível ao cliente".`, "ok");
+      } else {
+        const { error } = await sb.from("projetos").insert({ nome, descricao, status });
+        if (error) { aviso(avisoNovo, "Erro: " + error.message); return; }
+        aviso(avisoNovo, `Projeto "${nome}" criado. Agora libere o acesso e adicione as páginas abaixo.`, "ok");
+      }
       evento.target.reset();
       document.getElementById("projStatus").value = "em_andamento";
       await carregar();
     });
   });
+
+  /* ------------------------------ Proposta em branco ------------------------------ */
+  // Ponto de partida de uma proposta nova SEM copiar outro projeto.
+  // Só textos genéricos com variáveis; o resto você preenche no editor.
+  function dadosIniciaisProposta() {
+    const ml = (en, pt) => ({ en, pt });
+    return {
+      versao: 1, modelo: "proposta", idiomas: ["en", "pt"], idiomaPadrao: "en",
+      projeto: { barra: "" }, cliente: { nome: "", sigla: "", contatos: [] },
+      consultor: { cargo: {}, local: {} },
+      config: {
+        startDate: new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10), hoursPerDay: 6, workDays: [1, 2, 3, 4, 5], pmHoursTotal: 10,
+        rateEUR: 80, reworkPct: 15, contingencyPct: 0, eurBrl: 5.6, billing: "milestone", reports: 10, depositPct: 15, maintHours: 16, maintMonths: 12,
+        prazoPagamentoDias: 30, pacoteHoras: 100, pacoteDesconto: 5, showTrack: false, mostrarAndamento: true, mostrarHorasGastas: false,
+        secoesOcultas: [], marcoGoLive: "S3", marcoParcial: null,
+        phases: [{ id: "P1", prog: 0, c: "--p1", en: "Discovery", pt: "Levantamento" }, { id: "P2", prog: 0, c: "--p2", en: "Development", pt: "Desenvolvimento" }],
+        stages: [
+          { id: "S1", phase: "P1", hours: 16, en: "Kick-off and requirements", pt: "Kick-off e requisitos", ms: null, prog: 0 },
+          { id: "S2", phase: "P2", hours: 40, en: "Data model and report pages", pt: "Modelo de dados e páginas", ms: null, prog: 0 },
+          { id: "S3", phase: "P2", hours: 8, en: "Go-live", pt: "Go-live", ms: { en: "Go-live", pt: "Go-live" }, prog: 0 },
+        ],
+      },
+      entregas: {},
+      textos: {
+        "capa.kicker": ml("Proposal · Power BI development", "Proposta · Desenvolvimento Power BI"),
+        "escopo.lead": ml("Estimated effort per phase, plus a {retrabalho}% rework allowance and project management.", "Esforço estimado por fase, mais {retrabalho}% de retrabalho e gestão do projeto."),
+        "cronograma.titulo": ml("Go-live on {golive}", "Go-live em {golive}"),
+        "cronograma.lead": ml("Planned at {horas_dia} h/day, {dias_semana} days/week. Total {semanas} weeks.", "Planejado com {horas_dia} h/dia, {dias_semana} dias/semana. Total de {semanas} semanas."),
+        "investimento.titulo": ml("Total investment {investimento} for {horas_total} hours", "Investimento total de {investimento} para {horas_total} horas"),
+        "faturamento.titulo": ml("Proposal: {fases} invoices, one for each approved phase, plus a {sinal}% down payment", "Proposta: {fases} faturas, uma por fase aprovada, mais um sinal de {sinal}%"),
+        "manutencao.titulo": ml("After go-live, {manut_horas} hours a month for {manut_valor}/month", "Após o go-live, {manut_horas} horas por mês por {manut_valor}/mês"),
+        "proximos.titulo": ml("Next steps to start on {inicio}", "Próximos passos para começar em {inicio}"),
+      },
+      listas: {},
+    };
+  }
 
   carregar();
 })();
