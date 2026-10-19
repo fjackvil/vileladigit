@@ -1,6 +1,7 @@
 /* ==========================================================================
    Dicionário de tradução PT-BR / EN
-   Para editar textos do site, altere os valores abaixo (e o HTML para o PT).
+   Para editar textos do site, altere os valores abaixo, nos blocos pt e en.
+   O texto escrito no index.html é substituído por estes ao carregar a página.
    ========================================================================== */
 
 const translations = {
