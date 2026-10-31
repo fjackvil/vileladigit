@@ -266,6 +266,26 @@ a{ color: inherit; text-decoration: none; }
 }
 
 /* ---------------------------------- portfólio --------------------------------- */
+.clients{ margin-top: 48px; text-align: center; }
+.clients-title{
+  font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-soft); margin-bottom: 18px;
+}
+.clients-list{
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;
+}
+.client-item{
+  min-width: 180px; height: 84px; padding: 16px 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+}
+.client-item img{ max-height: 44px; max-width: 160px; width: auto; height: auto; }
+/* no tema escuro, logos escuras ficam brancas para continuar legíveis */
+[data-theme="dark"] .client-item img.client-logo-mono{ filter: brightness(0) invert(1); opacity: .9; }
+.client-name{ font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: var(--text); }
+@media (max-width: 480px){ .client-item{ min-width: 0; flex: 1 1 140px; padding: 14px 18px; } }
+
 .portfolio-grid{
   display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px;
 }

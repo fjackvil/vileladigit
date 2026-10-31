@@ -1,6 +1,7 @@
 /* ==========================================================================
    Dicionário de tradução PT-BR / EN
-   Para editar textos do site, altere os valores abaixo (e o HTML para o PT).
+   Para editar textos do site, altere os valores abaixo, nos blocos pt e en.
+   O texto escrito no index.html é substituído por estes ao carregar a página.
    ========================================================================== */
 
 const translations = {
@@ -78,12 +79,13 @@ const translations = {
     portfolio_title: "Dashboards e projetos de Power BI",
     portfolio_sub: "Clique em um projeto para abrir o dashboard interativo direto aqui no site.",
     portfolio_open: "Ver dashboard",
+    clients_title: "Empresas que já atendi",
 
     edu_eyebrow: "Formação Acadêmica",
     edu_title: "Base técnica sólida",
     edu0_badge: "Em andamento",
     edu0_title: "MBA em Business Intelligence & Analytics 360",
-    edu0_school: "(informe a instituição)",
+    edu0_school: "Centro Universitário de Tecnologia de Curitiba – UNIFATEC",
     edu0_year: "Cursando atualmente",
     edu1_title: "Pós-graduação, Gestão e Tecnologia da Informação",
     edu2_title: "Especialização, Lean Production",
@@ -172,12 +174,13 @@ const translations = {
     portfolio_title: "Power BI dashboards & projects",
     portfolio_sub: "Click a project to open the interactive dashboard right here on the site.",
     portfolio_open: "Open dashboard",
+    clients_title: "Companies I've worked with",
 
     edu_eyebrow: "Education",
     edu_title: "A solid technical foundation",
     edu0_badge: "In progress",
     edu0_title: "MBA, Business Intelligence & Analytics 360",
-    edu0_school: "(add institution)",
+    edu0_school: "Centro Universitário de Tecnologia de Curitiba – UNIFATEC",
     edu0_year: "Currently in progress",
     edu1_title: "Graduate Certificate, IT Management & Technology",
     edu2_title: "Specialization, Lean Production",
