@@ -85,6 +85,21 @@
     if (e.key === "Escape") closePortfolioModal();
   });
 
+  /* --------------------------- Empresas atendidas --------------------------- */
+  function renderClients() {
+    const list = document.getElementById("clientsList");
+    if (!list || typeof clientItems === "undefined") return;
+    list.innerHTML = clientItems
+      .map((c) => {
+        const content = c.logo
+          ? `<img src="${c.logo}" alt="${c.name}" loading="lazy"${c.mono ? ' class="client-logo-mono"' : ""}>`
+          : `<span class="client-name">${c.name}</span>`;
+        return `<li class="client-item">${content}</li>`;
+      })
+      .join("");
+  }
+  renderClients();
+
   function renderPortfolio(lang) {
     if (!portfolioGrid || typeof portfolioItems === "undefined") return;
     const openLabel = (translations[lang] && translations[lang].portfolio_open) || "Ver dashboard";

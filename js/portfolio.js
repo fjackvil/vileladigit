@@ -44,3 +44,21 @@ const portfolioItems = [
   }
   */
 ];
+
+/* ==========================================================================
+   EMPRESAS ATENDIDAS — faixa de logos abaixo dos dashboards
+   ==========================================================================
+
+   - name → nome da empresa (aparece como texto enquanto não houver logo,
+            e como descrição da imagem para leitores de tela)
+   - logo → caminho do arquivo da logo dentro de assets/clientes/
+            (de preferência .svg ou .png com fundo transparente).
+            Deixe "" para mostrar só o nome.
+   - mono → opcional. Use mono: true se a logo for de uma cor só e escura:
+            no tema escuro ela é mostrada em branco para continuar legível.
+   ========================================================================== */
+
+const clientItems = [
+  { name: "Stellantis", logo: "" },
+  { name: "Poenatela", logo: "" }
+];
