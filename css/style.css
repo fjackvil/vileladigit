@@ -419,10 +419,12 @@ a{ color: inherit; text-decoration: none; }
   background: var(--surface); border:1px solid var(--border); border-radius: var(--radius-md);
   text-align:left; transition: transform .15s ease, border-color .2s;
 }
+.contact-card svg{ flex-shrink: 0; }
+.contact-card > div{ min-width: 0; } /* deixa o texto quebrar em vez de alargar o cartão */
 .contact-card:hover{ transform: translateY(-3px); border-color: var(--accent); }
 .contact-whatsapp{ color: #2FA86B; }
 .contact-label{ display:block; font-size: .78rem; color: var(--text-soft); }
-.contact-value{ display:block; font-weight:600; font-family: var(--font-mono); font-size: .92rem; color: var(--text); }
+.contact-value{ display:block; font-weight:600; font-family: var(--font-mono); font-size: .92rem; color: var(--text); overflow-wrap: break-word; }
 
 /* ---------------------------------- footer --------------------------------- */
 .site-footer{ border-top: 1px solid var(--border); padding: 26px 0; }
