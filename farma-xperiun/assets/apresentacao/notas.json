@@ -1,0 +1,26 @@
+[
+    {
+        "slide":  1,
+        "notas":  "Abertura. A Farma Xperiun vende bem há quase seis anos: R$ 2,31 milhões de receita, R$ 672 mil de lucro e margem de 29%. Mas a gestão não sabia responder com dados onde ganha dinheiro, quando vende mais e se bate as metas. Nos próximos slides: onde está o lucro, como estão as metas, como a operação funciona, quando a farmácia vende e o que fazer."
+    },
+    {
+        "slide":  2,
+        "notas":  "Faturamento não é lucro. O Sistema Respiratório é o grupo que mais vende (31% da receita), mas com margem de 23,9%. Os Analgésicos vendem quase o mesmo (30%) e entregam 40% do lucro, com margem de 38,9%. Os controlados (com receita médica) pesam quase metade da receita, mas têm margem baixa. E a receita está concentrada: Formoterol e Budesonida sozinhos fazem 18% dela, com margem perto de 20%."
+    },
+    {
+        "slide":  3,
+        "notas":  "As metas ficam no limite do realizado: atingimento acumulado de 97,5%, mas batidas em menos da metade dos meses. Há um padrão: junho nunca bate. E as metas não acompanham a realidade: em 2019, o melhor ano em vendas, a meta subiu mais que o dobro do crescimento real, e o atingimento foi o pior da série. Em 2017, o inverso: a meta caiu junto com as vendas, e o ano ruim parece bom."
+    },
+    {
+        "slide":  4,
+        "notas":  "Comparando por hora de funcionamento, a noite é o turno mais produtivo, mesmo fechando às 22h: R$ 88,96 por hora, contra R$ 79,70 da manhã e R$ 74,29 da tarde. O desconto é o gargalo mais claro: não muda a quantidade comprada, derruba a margem em quase 8 pontos e é aplicado de forma uniforme, sem política. A forma de pagamento não explica nada: o ticket e a taxa de desconto são praticamente iguais em PIX, cartões, dinheiro e convênio."
+    },
+    {
+        "slide":  5,
+        "notas":  "O calendário importa: outubro vende 22% acima do mês médio e dezembro 21%; julho fica 20% abaixo. Isso pede estoque e equipe maiores de outubro a janeiro. Um alerta: os antiasmáticos caem no inverno, o contrário do esperado no Brasil; a base parece seguir o padrão do hemisfério norte, então esse ponto precisa ser validado com dados reais. Riscos: um fornecedor concentra mais de um quarto da receita, e o fornecedor mais lento (5 dias) entrega um dos produtos mais vendidos. A queda de 2017 veio do tamanho da compra, não do número de clientes."
+    },
+    {
+        "slide":  6,
+        "notas":  "Quatro ações, da mais rápida à mais estrutural. Primeiro, o desconto: ele não traz volume e custa margem, então deve ter critério; o ganho estimado é de até R$ 4 mil de lucro por ano. Segundo, custo: os dois produtos que mais faturam têm a pior margem; cada ponto a mais vale cerca de R$ 4,2 mil no período. Terceiro, metas: hoje elas sobem mais rápido que as vendas e falham na maioria dos meses; meta boa considera o crescimento real e a sazonalidade. Quarto, operação: estoque e equipe acompanhando o calendário e o turno da noite, com atenção ao fornecedor de prazo mais longo. Próximos passos: simular o lucro sem desconto, uma meta realista e investigar a queda de 2017 por produto."
+    }
+]

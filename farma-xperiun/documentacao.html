@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Documentação técnica · Farma Xperiun</title><meta name="description" content="Documentação técnica: consultas SQL, modelo de dados, medidas DAX e dashboard da Farma Xperiun."><meta property="og:title" content="Documentação técnica · Farma Xperiun"><meta property="og:description" content="Documentação técnica: consultas SQL, modelo de dados, medidas DAX e dashboard da Farma Xperiun."><meta property="og:type" content="website"><meta property="og:url" content="https://vileladigit.com.br/farma-xperiun/documentacao.html"><meta property="og:image" content="https://vileladigit.com.br/farma-xperiun/assets/apresentacao/slide-1.png">
+<link rel="icon" type="image/png" href="assets/img/icone_olist_squad_256.png">
+<link rel="stylesheet" href="assets/site.css"><style>
+.doc h1{font-size:30px;color:var(--verde-esc)}.doc h2{font-size:24px;border-bottom:2px solid var(--verde);padding-bottom:4px}
+.doc h3{font-size:18px;color:var(--verde);margin-top:22px}
+.doc table{border-collapse:collapse;width:100%;margin:10px 0 16px;font-size:14.5px;display:block;overflow-x:auto}
+.doc th{background:var(--verde);color:#fff;text-align:left;padding:7px 9px}.doc td{padding:6px 9px;border:1px solid var(--borda);vertical-align:top;background:var(--card)}
+.doc code{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;background:var(--verde-claro);padding:1px 5px;border-radius:4px}
+.doc pre{background:#EEF3F0;border-left:4px solid var(--verde);padding:12px 14px;border-radius:6px;overflow-x:auto;font-size:13.5px;line-height:1.45}
+.doc pre code{background:none;padding:0}.doc hr{border:0;border-top:1px solid var(--borda);margin:18px 0}
+</style>
+</head><body>
+<header class="topo"><div class="in"><a class="marca" href="index.html"><img src="assets/img/icone_olist_squad_256.png" alt="">Farma Xperiun · Olist Squad</a><nav><a href="index.html">Início</a><a href="dashboard.html">Dashboard</a><a href="visao-geral.html">Visão geral</a><a href="documentacao.html" class="ativo">Documentação</a><a href="apresentacao.html">Apresentação</a></nav></div></header>
+<main><div class="botoes" style="margin:0 0 10px"><a class="btn" href="assets/docs/DOCUMENTACAO_TECNICA.pdf" download>Baixar em PDF</a></div>
+<article class="doc"><h1>Farma Xperiun · Documentação Técnica</h1>
+<p><strong>Data Challenge Xperiun · Fase 2 · Equipe Olist Squad</strong><br>Versão final de 25/11/2026 · Dashboard publicado: <a href="https://app.powerbi.com/view?r=eyJrIjoiMThlMGVmMjQtNmJkOC00Mjc2LWJlOTEtNjJiYWUxNGUzMjE5IiwidCI6IjAxOGUzMGI2LTcxZWMtNGQzOS1hZTJjLTE5NDk4YmFjMWNjNiJ9">link público do Power BI</a></p>
+<p>Este documento explica como o dashboard foi construído: de onde vêm os dados, o que as consultas SQL revelaram, como o modelo está montado, o que cada grupo de medidas DAX calcula e como reproduzir ou continuar o trabalho.</p>
+<hr>
+<h2>1. Objetivo e contexto</h2>
+<p>A Farma Xperiun é uma farmácia de bairro com mais de 6 anos de operação. Ela vende bem, mas não sabia responder com dados a seis perguntas:</p>
+<ol><li>Quais categorias sustentam a receita e quais dão margem?</li><li>Existe sazonalidade nas vendas?</li><li>Manhã, tarde e noite vendem o mesmo mix, com o mesmo ticket?</li><li>A meta mensal foi batida? Por quanto?</li><li>Os descontos corroem a margem ou trazem volume?</li><li>Qual forma de pagamento domina, e ela afeta o desconto?</li></ol>
+<p><strong>Papel:</strong> analista de dados. <strong>Ferramentas:</strong> SQL (SQLite migrado para SQL Server) para explorar e Power BI para comunicar.<br><strong>Entregas:</strong> dashboard publicado, esta documentação técnica e uma apresentação executiva de até 6 slides.</p>
+<hr>
+<h2>2. Fonte de dados</h2>
+<p>O arquivo original é <code>Base/farma_xperiun.db</code> (SQLite), num modelo estrela. Ele foi migrado para o <strong>SQL Server</strong> (banco <code>FarmaXperiun</code>) com os scripts de <code>projeto/00_migracao_sqlserver/</code>. Na migração, a data virou <code>DATE</code>, os valores viraram <code>DECIMAL(12,2)</code> e os campos booleanos viraram <code>BIT</code>. A validação conferiu as contagens e os totais contra o original.</p>
+<table><tr><th>Tabela</th><th>Linhas</th><th>Papel</th><th>Chave</th></tr><tr><td><code>f_vendas</code></td><td>85.407</td><td>Fato: 1 linha = 1 venda</td><td><code>data</code>, <code>produto_id</code>, <code>fornecedor_id</code>, <code>turno_id</code></td></tr><tr><td><code>d_produto</code></td><td>33</td><td>Produto → categoria → grupo terapêutico; preço, custo, <code>exige_receita</code></td><td><code>produto_id</code></td></tr><tr><td><code>d_fornecedor</code></td><td>8</td><td>Laboratório, UF, prazo de entrega (dias)</td><td><code>fornecedor_id</code></td></tr><tr><td><code>d_calendario</code></td><td>2.191</td><td>01/01/2014 a 31/12/2019, com flags de fim de semana e feriado</td><td><code>data</code></td></tr><tr><td><code>d_turno</code></td><td>3</td><td>Manhã (8–13 h), Tarde (13–18 h), Noite (18–22 h)</td><td><code>turno_id</code></td></tr><tr><td><code>d_meta_mensal</code></td><td>72</td><td>Meta de receita líquida e de unidades, por mês</td><td><code>ano</code> + <code>mes</code> (sem chave estrangeira)</td></tr></table>
+<p><strong>Números de referência</strong> (conferidos no SQL e no Power BI):</p>
+<table><tr><th>Indicador</th><th>Valor</th></tr><tr><td>Período das vendas</td><td>02/01/2014 a 08/10/2019</td></tr><tr><td>Receita líquida</td><td>R$ 2.313.807,90</td></tr><tr><td>Lucro</td><td>R$ 671.861,32 (margem de 29,0%)</td></tr><tr><td>Ticket médio</td><td>R$ 27,09</td></tr><tr><td>Desconto concedido</td><td>R$ 23.504,85, em 10% das vendas</td></tr></table>
+<hr>
+<h2>3. Qualidade dos dados e tratamentos</h2>
+<p>Antes de analisar, o script <code>01_sql/02_qualidade.sql</code> verificou se os números eram confiáveis.</p>
+<table><tr><th>#</th><th>Achado</th><th>Tratamento</th></tr><tr><td>Q1</td><td><strong>Out/2019 é mês parcial</strong> (vendas até 08/10), e a meta de out/2019 está zerada. A documentação do desafio cita só nov e dez.</td><td>Out a dez/2019 ficam fora das comparações com a meta. A comparação de 2019 com 2018 usa o mesmo período (até 08/10).</td></tr><tr><td>Q2</td><td>Metas zeradas em out, nov e dez/2019</td><td>No Power Query, a meta 0 vira nulo; assim o atingimento fica em branco, e não em 0%.</td></tr><tr><td>Q3</td><td>1.105 vendas com <code>receita_bruta</code> diferente de quantidade × preço (no máximo R$ 0,38)</td><td>Arredondamento. Usa-se o valor gravado.</td></tr><tr><td>Q4</td><td>26 dias sem nenhuma venda, a maioria em dias normais (19/12 e 07/01 em quase todos os anos)</td><td>Registrado como possível fechamento para balanço ou falha de registro.</td></tr><tr><td>Q5</td><td>Quantidade fracionada (0,01 a 29)</td><td>Normal: fração de caixa.</td></tr><tr><td>Q6</td><td>Cada produto tem um único fornecedor</td><td>O fornecedor funciona como atributo do produto.</td></tr><tr><td>Q7</td><td>Turno 100% coerente com a hora da venda</td><td>OK.</td></tr><tr><td>Q8</td><td>Preço praticado varia exatamente entre −5% e +5% do preço de tabela</td><td>Medida <code>Variação Preço x Tabela %</code>.</td></tr><tr><td>Q9</td><td>Jan/2017 tem quase o dobro de vendas de outros janeiros, com quantidade média por venda bem menor</td><td>Hipótese: vendas desmembradas. Registrado como limitação; não há duplicatas exatas.</td></tr><tr><td>Q10</td><td>Feriados móveis (Carnaval, Sexta-feira Santa, Corpus Christi) não estão no calendário</td><td>Limitação citada; a comparação de feriados usa só os fixos.</td></tr></table>
+<p>Fórmulas conferidas: <code>receita_liquida = receita_bruta − desconto</code> e <code>lucro = receita_liquida − custo_total</code> batem em 100% das linhas. Não há nulos, quantidades zeradas, descontos maiores que a venda nem vendas com prejuízo.</p>
+<hr>
+<h2>4. Exploração em SQL: principais consultas e o que revelaram</h2>
+<p>Os 7 scripts ficam em <code>projeto/01_sql/</code> (T-SQL). Cada consulta tem a pergunta no comentário. O registro completo dos achados está em <code>01_sql/ACHADOS_SQL.md</code>. Abaixo estão as consultas que mais pesaram nas conclusões.</p>
+<h3>4.1 2019 não está caindo: comparação justa de janeiro a setembro (<code>03 · 3.3</code>)</h3>
+<pre><code>WITH ytd AS (
+    SELECT YEAR(data) AS ano, SUM(receita_liquida) AS receita
+    FROM dbo.f_vendas WHERE MONTH(data) &lt;= 9
+    GROUP BY YEAR(data)
+)
+SELECT ano, receita, receita / LAG(receita) OVER (ORDER BY ano) - 1 AS cresc_ytd
+FROM ytd ORDER BY ano;</code></pre>
+<p><strong>Revelou:</strong> o total anual de 2019 parece menor só porque o ano termina em 08/10. De janeiro a setembro, <strong>2019 é o melhor ano da série</strong> (R$ 321,7 mil). <strong>2017 foi o ano ruim</strong>, com −19% de receita. O número de vendas ficou estável, mas o ticket caiu porque a quantidade por venda passou de 1,64 para 1,30 (consulta 3.5).</p>
+<h3>4.2 Quem fatura e quem dá lucro (<code>04 · 4.1</code> e <code>4.6</code>)</h3>
+<pre><code>SELECT p.grupo_terapeutico,
+       SUM(v.receita_liquida) AS receita, SUM(v.lucro) AS lucro,
+       SUM(v.lucro) / SUM(v.receita_liquida) AS margem,
+       SUM(v.lucro) / SUM(SUM(v.lucro)) OVER () AS part_lucro
+FROM dbo.f_vendas v JOIN dbo.d_produto p ON p.produto_id = v.produto_id
+GROUP BY p.grupo_terapeutico;</code></pre>
+<p><strong>Revelou:</strong> o <strong>Sistema Respiratório</strong> fatura mais (31% da receita, margem de 23,9%), mas os <strong>Analgésicos</strong> dão <strong>40% do lucro</strong> com margem de 38,9%. Os produtos com receita médica são 46% da receita e só 36% do lucro (margem de 22,7% contra 34,5% na venda livre). Formoterol e Budesonida, os dois produtos que mais faturam, têm margem de 19 a 21%.</p>
+<h3>4.3 O turno da noite é o mais produtivo (<code>05 · 5.1</code>)</h3>
+<pre><code>SELECT t.nome_turno, t.hora_fim - t.hora_inicio AS horas,
+       SUM(v.receita_liquida) / (COUNT(DISTINCT v.data) * (t.hora_fim - t.hora_inicio)) AS receita_por_hora
+FROM dbo.f_vendas v JOIN dbo.d_turno t ON t.turno_id = v.turno_id
+GROUP BY t.nome_turno, t.hora_inicio, t.hora_fim;</code></pre>
+<p><strong>Revelou:</strong> comparando por <strong>hora aberta</strong>, a noite rende R$ 88,96 por hora, contra R$ 79,70 da manhã e R$ 74,29 da tarde, e tem o maior ticket (R$ 28,77). Pela soma simples a noite parecia o pior turno, porque tem uma hora a menos. O mix também muda: à noite o Sistema Nervoso cai de 25% para 15% da receita (5.3).</p>
+<h3>4.4 O desconto não traz volume (<code>05 · 5.7</code>)</h3>
+<pre><code>SELECT CASE WHEN desconto &gt; 0 THEN &#x27;Com desconto&#x27; ELSE &#x27;Sem desconto&#x27; END AS tipo,
+       AVG(quantidade) AS qtd_media_por_venda,
+       SUM(lucro) / SUM(receita_liquida) AS margem
+FROM dbo.f_vendas
+GROUP BY CASE WHEN desconto &gt; 0 THEN &#x27;Com desconto&#x27; ELSE &#x27;Sem desconto&#x27; END;</code></pre>
+<p><strong>Revelou:</strong> a quantidade por venda é praticamente a mesma (1,51 com desconto contra 1,48 sem), mas a margem cai de <strong>29,7% para 22,0%</strong>. O desconto aparece em cerca de 10% das vendas em todo turno, forma de pagamento e grupo, ou seja, sem critério. Ele custou R$ 23,5 mil, 3,4% do lucro potencial (5.8).</p>
+<h3>4.5 Sazonalidade por categoria (<code>06 · 6.2</code>)</h3>
+<pre><code>-- índice = receita média do mês ÷ média mensal da categoria (anos completos 2014–2018)
+SELECT categoria, mes, receita_media / AVG(receita_media) OVER (PARTITION BY categoria) AS indice_sazonal
+FROM media_mes;</code></pre>
+<p><strong>Revelou:</strong> outubro (+22%) e dezembro (+21%) são os meses fortes; julho (−20%) e agosto (−17%), os fracos. O padrão <strong>não segue as estações do Brasil</strong>: os antiasmáticos caem no inverno brasileiro (índice de 0,54 em agosto) e os anti-histamínicos têm pico em maio (1,89). É um padrão de hemisfério norte, registrado como limitação da base.</p>
+<h3>4.6 Metas: quantas vezes e quais meses falham (<code>07 · 7.2</code>, <code>7.3</code> e <code>7.4</code>)</h3>
+<pre><code>SELECT mes, COUNT(*) AS anos_avaliados,
+       SUM(CASE WHEN receita_realizada &lt; meta_receita THEN 1 ELSE 0 END) AS vezes_nao_batida,
+       AVG(receita_realizada / meta_receita) AS atingimento_medio
+FROM dbo.vw_meta_realizado
+GROUP BY mes ORDER BY vezes_nao_batida DESC;</code></pre>
+<p><strong>Revelou:</strong> a meta foi batida em <strong>31 de 69 meses (45%)</strong>, com atingimento total de 97,5%. <strong>Junho nunca bateu</strong> (0 de 6 anos). Em 2019 a meta subiu 7,8% e as vendas 3,0%: é o melhor ano em vendas e o pior em atingimento. Em 2017 a meta foi cortada junto com a queda das vendas, por isso "meta batida" não significou "ano bom".</p>
+<hr>
+<h2>5. Transformações (Power Query e colunas calculadas)</h2>
+<p>As 6 tabelas são importadas do SQL Server (<code>localhost</code>, banco <code>FarmaXperiun</code>, modo Importar).</p>
+<p><strong>No Power Query:</strong></p>
+<table><tr><th>Tabela</th><th>Passo</th><th>Para quê</th></tr><tr><td><code>d_calendario</code></td><td><code>AnoMes = ano * 100 + mes</code></td><td>Chave mês a mês para ligar à meta</td></tr><tr><td><code>d_meta_mensal</code></td><td><code>AnoMes</code>; meta 0 → nulo</td><td>Ligação com o calendário; metas zeradas não contam como 0%</td></tr><tr><td><code>d_turno</code></td><td><code>horas_turno = hora_fim − hora_inicio</code></td><td>Receita por hora aberta (5, 5 e 4 h)</td></tr><tr><td><code>d_produto</code></td><td><code>tipo_receita</code> = "Com receita" / "Venda livre"</td><td>Rótulo legível para filtros e gráficos</td></tr></table>
+<p><strong>Colunas calculadas em DAX</strong> (rótulos para os eixos dos gráficos):</p>
+<table><tr><th>Coluna</th><th>Fórmula</th><th>Uso</th></tr><tr><td><code>d_calendario[MesAbrev]</code></td><td><code>LEFT(nome_mes, 3)</code>, ordenada por <code>mes</code></td><td>Colunas das matrizes</td></tr><tr><td><code>d_calendario[MesAno]</code></td><td>"jan/14", ordenada por <code>AnoMes</code></td><td>Rótulo dos meses nos textos</td></tr><tr><td><code>d_calendario[MesInicio]</code></td><td><code>DATE(ano, mes, 1)</code></td><td>Eixo contínuo dos gráficos mensais (sem barra de rolagem)</td></tr><tr><td><code>d_calendario[DiaAbrev]</code></td><td><code>LEFT(nome_dia_semana, 3)</code>, ordenada por <code>dia_semana</code></td><td>Mapa de calor e dia da semana</td></tr><tr><td><code>f_vendas[Tem Desconto]</code></td><td>"Com desconto" / "Sem desconto"</td><td>Comparação com e sem desconto</td></tr></table>
+<p>Também foram definidas ordenações: <code>nome_mes</code> por <code>mes</code>, <code>nome_dia_semana</code> por <code>dia_semana</code> e <code>nome_turno</code> por <code>turno_id</code> (Manhã, Tarde, Noite).</p>
+<hr>
+<h2>6. Modelo de dados</h2>
+<pre><code>                 d_calendario (data)          d_meta_mensal (AnoMes)
+                        │ 1                     ┆ sem relacionamento:
+                        │                       ┆ lida por TREATAS
+                        ▼ *                     ┆
+d_produto ─1───*─▶  f_vendas  ◀─*───1─ d_turno
+                        ▲ *
+                        │ 1
+                  d_fornecedor</code></pre>
+<ul><li><strong>Modelo estrela:</strong> <code>f_vendas</code> ligada a <code>d_calendario[data]</code>, <code>d_produto[produto_id]</code>, <code>d_fornecedor[fornecedor_id]</code> e <code>d_turno[turno_id]</code>. As quatro relações são de 1 para muitos, com filtro em direção única.</li><li><code>d_calendario</code> está marcada como <strong>tabela de datas</strong>, para a inteligência de tempo funcionar (<code>SAMEPERIODLASTYEAR</code>, <code>TOTALYTD</code>).</li><li>As chaves da fato ficam ocultas, para o usuário filtrar sempre pelas dimensões.</li></ul>
+<p><strong>Decisão sobre a meta.</strong> A meta está no grão mês, e as vendas, no grão dia. Em vez de criar uma relação muitos-para-muitos ou bidirecional, <code>d_meta_mensal</code> <strong>fica sem relacionamento</strong> e a medida leva os meses filtrados no calendário até a meta:</p>
+<pre><code>Meta Receita =
+IF ( NOT [Filtro Fora da Meta],
+    CALCULATE ( SUM ( d_meta_mensal[meta_receita] ),
+                TREATAS ( VALUES ( d_calendario[AnoMes] ), d_meta_mensal[AnoMes] ) ) )</code></pre>
+<p>Assim os filtros de ano, mês e trimestre valem para a meta sem ambiguidade no modelo.</p>
+<p>A meta é da <strong>farmácia inteira</strong>. Por isso, quando há filtro de produto, turno ou fornecedor, ela fica em branco (<code>Filtro Fora da Meta = ISCROSSFILTERED(d_produto) || ISCROSSFILTERED(d_turno) || ISCROSSFILTERED(d_fornecedor)</code>), e os textos avisam o motivo. Sem isso, comparar "só Analgésicos" com a meta total daria 28% de atingimento, um número sem sentido.</p>
+<hr>
+<h2>7. Medidas DAX</h2>
+<p>São <strong>173 medidas</strong>, todas na tabela <code>medidas</code>, organizadas em 10 pastas de exibição. A fonte única das fórmulas é <code>projeto/02_powerbi/medidas.json</code>, e o catálogo comentado das medidas de negócio está em <code>02_powerbi/medidas_dax.md</code>.</p>
+<table><tr><th>Pasta</th><th>Medidas</th><th>O que reúne</th></tr><tr><td>01. Base</td><td>7</td><td>Receita líquida e bruta, desconto, custo, lucro, quantidade de vendas, unidades</td></tr><tr><td>02. Indicadores</td><td>4</td><td>Ticket médio, margem %, unidades por venda, variação preço x tabela</td></tr><tr><td>03. Metas</td><td>17</td><td>Meta, realizado nos meses com meta, atingimento, gap, meses batidos, crescimento da meta x vendas</td></tr><tr><td>04. Tempo</td><td>10</td><td>Ano anterior (LY), variação anual, acumulado no ano, média móvel de 3 meses</td></tr><tr><td>05. Desconto</td><td>10</td><td>% de vendas com desconto, margem e ticket com e sem desconto</td></tr><tr><td>06. Mix e Ranking</td><td>18</td><td>Participações, ranking, curva ABC, concentração, controlados, fornecedores</td></tr><tr><td>07. Turno</td><td>4</td><td>Dias com venda, receita e vendas por hora aberta</td></tr><tr><td>08. Sazonalidade</td><td>6</td><td>Índice sazonal, receita por dia, feriado x dia normal, mês pico e mês vale</td></tr><tr><td>09. Visual</td><td>86</td><td>Textos dinâmicos (títulos e subtítulos), cores condicionais, contexto da seleção</td></tr><tr><td>10. Considerações</td><td>11</td><td>Respostas às 6 perguntas e recomendações, todas calculadas</td></tr></table>
+<h3>7.1 Medidas de negócio que merecem explicação</h3>
+<p><strong>Receita por hora aberta.</strong> Compara turnos de durações diferentes: a receita é dividida pelos dias com venda × horas do turno.</p>
+<pre><code>Receita por Hora =
+DIVIDE ( [Receita Líquida],
+    SUMX ( VALUES ( d_turno[turno_id] ),
+           [Dias com Venda] * CALCULATE ( MAX ( d_turno[horas_turno] ) ) ) )</code></pre>
+<p><strong>Ano anterior com o mesmo período.</strong> Como 2019 termina em 08/10, o ano anterior é limitado à data da última venda. Assim 2019 é comparado com 2018 até 08/10: +2,8%, e não −24%.</p>
+<pre><code>Receita LY =
+VAR _ultimaVenda = CALCULATE ( MAX ( f_vendas[data] ), ALL ( f_vendas ) )
+VAR _datas = FILTER ( VALUES ( d_calendario[data] ), d_calendario[data] &lt;= _ultimaVenda )
+RETURN CALCULATE ( [Receita Líquida], SAMEPERIODLASTYEAR ( _datas ) )</code></pre>
+<p><strong>Índice sazonal só com anos completos.</strong> Os anos completos (vendas de janeiro a dezembro) são <strong>descobertos pelos dados</strong>, e não fixados em "2014 a 2018". Se a base ganhar 2020 inteiro, ele entra sozinho.</p>
+<pre><code>Índice Sazonal Completo =
+CALCULATE ( [Índice Sazonal],
+    KEEPFILTERS ( FILTER ( ALL ( d_calendario[ano] ),
+        VAR _a = d_calendario[ano]
+        VAR _mx = CALCULATE ( MAX ( f_vendas[data] ), ALL ( f_vendas ), d_calendario[ano] = _a )
+        VAR _mn = CALCULATE ( MIN ( f_vendas[data] ), ALL ( f_vendas ), d_calendario[ano] = _a )
+        RETURN NOT ISBLANK ( _mx ) &amp;&amp; MONTH ( _mx ) = 12 &amp;&amp; MONTH ( _mn ) = 1 ) ) )</code></pre>
+<p><strong>Curva ABC.</strong> Para cada produto, soma a receita de todos os produtos com receita maior ou igual à dele (o % acumulado) e classifica: A até 80%, B até 95%, C o resto. Com todos os anos, são 18 produtos A, 9 B e 6 C.</p>
+<p><strong>Crescimento da meta x das vendas.</strong> Compara os mesmos meses com meta de um ano e do ano anterior (<code>AnoMes − 100</code>), para que 2019 (jan a set) não seja comparado com 2018 inteiro.</p>
+<h3>7.2 Textos dinâmicos (pasta 09. Visual)</h3>
+<p>Regra do projeto: <strong>nenhum texto que descreve dados é fixo</strong>. Títulos e subtítulos dos gráficos, subtítulos dos cartões e o contexto no cabeçalho são medidas de texto. Elas são ligadas ao visual pela opção "valor do campo" (formatação condicional) e mudam com qualquer filtro. Ficam fixos só os nomes das páginas, os nomes das métricas nos cartões, os rótulos dos filtros e as legendas de cor.</p>
+<p>O padrão das medidas é: (1) montar uma tabela virtual com o que está na seleção, (2) achar o maior ou o menor com <code>TOPN</code>, (3) escrever a frase com <code>FORMAT</code>. Exemplo:</p>
+<pre><code>Título Turno Hora =
+VAR _t = FILTER ( ADDCOLUMNS ( VALUES ( d_turno[nome_turno] ), &quot;@v&quot;, [Receita por Hora] ), NOT ISBLANK ( [@v] ) )
+VAR _b = TOPN ( 1, _t, [@v], DESC )
+RETURN &quot;A &quot; &amp; LOWER ( MAXX ( _b, d_turno[nome_turno] ) ) &amp; &quot; é o turno mais produtivo: &quot;
+       &amp; FORMAT ( MAXX ( _b, [@v] ), &quot;&quot;&quot;R$&quot;&quot; #,##0.00&quot; ) &amp; &quot; por hora&quot;</code></pre>
+<p>Cada texto foi testado em várias seleções (todos os anos, um ano só, anos salteados, um único grupo, turno ou fornecedor), e os casos especiais têm redação própria. Por exemplo, com um único ano selecionado, "o mês que mais falha" vira "pior mês: fevereiro (86,2% da meta)". Uma varredura em 25/11 confirmou que nenhuma medida tem nome de turno, produto, fornecedor, ano ou data fixos na fórmula. Os números fixos que restam são <strong>regras</strong>: limites de cor do semáforo (95%), cortes da curva ABC (80% e 95%) e o critério de "o desconto traz volume" (5%).</p>
+<p><strong>Cores condicionais</strong> também são medidas (<code>Cor Atingimento</code>, <code>Cor Gap</code>, <code>Cor Heatmap</code>…). No mapa de calor, a escala usa <code>ALL</code> nas colunas da grade, para que todas as células sejam comparadas na mesma escala. Com <code>ALLSELECTED</code>, cada coluna da matriz ganhava a própria escala.</p>
+<h3>7.3 Considerações finais calculadas (pasta 10)</h3>
+<p>As respostas às 6 perguntas e as 4 recomendações são medidas que reaproveitam as anteriores. Por isso a página de conclusões também muda com o ano. Em 2018, por exemplo, o mês forte vira março, e a recomendação de desconto deixa de afirmar que ele é dado "sem critério", porque naquele ano a taxa varia entre as formas de pagamento.</p>
+<hr>
+<h2>8. Dashboard</h2>
+<p><strong>Link público:</strong> <a href="https://app.powerbi.com/view?r=eyJrIjoiMThlMGVmMjQtNmJkOC00Mjc2LWJlOTEtNjJiYWUxNGUzMjE5IiwidCI6IjAxOGUzMGI2LTcxZWMtNGQzOS1hZTJjLTE5NDk4YmFjMWNjNiJ9">https://app.powerbi.com/view?r=eyJrIjoiMThlMGVmMjQtNmJkOC00Mjc2LWJlOTEtNjJiYWUxNGUzMjE5IiwidCI6IjAxOGUzMGI2LTcxZWMtNGQzOS1hZTJjLTE5NDk4YmFjMWNjNiJ9</a><br><strong>Arquivo:</strong> <code>FarmaXperiun.pbix</code> (raiz da pasta do desafio), gerado a partir do projeto <code>FarmaXperiun.pbip</code>.<br><strong>Site do projeto:</strong> pasta <code>site_farma_xperiun/</code>, publicada em vileladigit.com.br, com o dashboard incorporado, esta documentação e a apresentação (seção 9).</p>
+<table><tr><th>Página</th><th>Pergunta</th><th>Visuais principais</th></tr><tr><td><strong>Início</strong> (única visível)</td><td>Onde começar?</td><td>6 quadros com um número ao vivo cada; equipe Olist Squad; período dos dados</td></tr><tr><td>Visão Executiva</td><td>Como está o negócio?</td><td>6 cartões com variação contra o ano anterior; receita x meta mês a mês; quem fatura x quem dá lucro; semáforo de metas (ano × mês)</td></tr><tr><td>Metas</td><td>Batemos a meta? Por quanto?</td><td>Meta x realizado por ano; crescimento da meta x das vendas; gap mês a mês; meses que mais falham</td></tr><tr><td>Produtos &amp; Margem</td><td>O que sustenta o lucro?</td><td>Dispersão receita x margem (linha da margem média da seleção); margem por categoria; curva ABC; venda livre x com receita</td></tr><tr><td>Operação</td><td>Onde e como vendemos?</td><td>Receita por hora aberta por turno; mapa de calor hora × dia da semana; mix por turno; pagamento; com x sem desconto</td></tr><tr><td>Sazonalidade &amp; Fornecedores</td><td>Quando vendemos e de quem dependemos?</td><td>Índice sazonal categoria × mês; perfil sazonal por grupo; fornecedores com prazo; receita por dia da semana</td></tr><tr><td>Considerações finais</td><td>O que os dados respondem?</td><td>O que foi pedido; 6 perguntas com respostas calculadas; 4 recomendações</td></tr></table>
+<p><strong>Como usar:</strong></p>
+<ul><li>Comece pelo <strong>Início</strong> e clique num quadro para abrir a análise. O botão <strong>"← Voltar ao início"</strong> fica no canto superior esquerdo de todas as páginas.</li><li>Os filtros ficam no topo de cada página. O <strong>Ano</strong> é sincronizado entre as páginas; Grupo, Tipo de venda, Turno e Fornecedor valem só na página em que foram escolhidos.</li><li>O texto abaixo do título de cada página mostra a <strong>seleção atual</strong> (ex.: "2017 · Analgésicos · venda livre").</li><li>Títulos e subtítulos dos gráficos trazem a <strong>conclusão</strong> para a seleção. Basta ler o título para saber o que o gráfico mostra.</li></ul>
+<p><strong>Identidade visual:</strong> tema próprio (<code>tema_farma.json</code>), com verde-farmácia, faixa de cabeçalho com padrão de cápsulas e cruzes, cartões brancos com cantos arredondados e ícone da equipe. Os fundos e o ícone são imagens geradas por script.</p>
+<hr>
+<h2>9. Entregas e publicação</h2>
+<table><tr><th>Entrega</th><th>Onde está</th><th>Formato</th></tr><tr><td>Dashboard publicado</td><td><a href="https://app.powerbi.com/view?r=eyJrIjoiMThlMGVmMjQtNmJkOC00Mjc2LWJlOTEtNjJiYWUxNGUzMjE5IiwidCI6IjAxOGUzMGI2LTcxZWMtNGQzOS1hZTJjLTE5NDk4YmFjMWNjNiJ9">link público do Power BI</a></td><td>Power BI, Publicar na Web</td></tr><tr><td>Arquivo do dashboard</td><td><code>FarmaXperiun.pbix</code> (raiz da pasta)</td><td>.pbix</td></tr><tr><td>Documentação técnica</td><td><code>projeto/03_documentacao/DOCUMENTACAO_TECNICA</code></td><td>PDF, HTML e Markdown</td></tr><tr><td>Apresentação executiva</td><td><code>projeto/04_apresentacao/Apresentacao_Farma_Xperiun.pptx</code></td><td>PowerPoint e PDF, 6 slides com notas do apresentador</td></tr><tr><td>Site do projeto</td><td><code>site_farma_xperiun/</code></td><td>HTML estático</td></tr></table>
+<p><strong>Apresentação executiva.</strong> São seis slides, sem código, numa sequência de situação, complicação, insight e ação:</p>
+<ol><li>abertura com os grandes números e a equipe;</li><li>onde está o dinheiro (receita x lucro por grupo);</li><li>metas;</li><li>operação (turnos, desconto e pagamento);</li><li>sazonalidade e riscos;</li><li>quatro ações com impacto estimado.</li></ol>
+<p>Os gráficos são nativos do PowerPoint e cada slide traz as notas de quem apresenta. Também existe uma versão em slides do Claude, cujas fontes ficam em <code>04_apresentacao/slides_online/</code>.</p>
+<p><strong>Site.</strong> Um site estático, sem build, com cinco páginas:</p>
+<ul><li><strong>Início:</strong> o Power BI incorporado, os números principais e as 6 perguntas respondidas;</li><li><strong>Dashboard:</strong> o painel em tela cheia;</li><li><strong>Visão geral:</strong> o documento explicativo do projeto;</li><li><strong>Documentação:</strong> este documento, com o PDF para baixar;</li><li><strong>Apresentação:</strong> visualizador dos slides com as notas, e downloads em PowerPoint e PDF.</li></ul>
+<p>Os links são relativos, então o site funciona na raiz do domínio ou numa subpasta. O <code>.pbix</code> não é publicado no site. Instruções de publicação: <code>site_farma_xperiun/README.md</code>.</p>
+<hr>
+<h2>10. Como reproduzir ou continuar o trabalho</h2>
+<pre><code>data chalenge farm/
+├── LEIA-ME.md                            por onde começar (entregas, o que abrir, checklist)
+├── Base/farma_xperiun.db                 banco original (não alterar)
+├── FarmaXperiun.pbip                     projeto do Power BI (fonte de verdade do relatório)
+├── FarmaXperiun.Report/ e .SemanticModel/  páginas (PBIR) e modelo (TMDL), em texto
+├── FarmaXperiun.pbix                     arquivo de entrega
+├── site_farma_xperiun/                   site pronto para publicar (HTML estático)
+└── projeto/
+    ├── 00_migracao_sqlserver/            SQLite → SQL Server (criar, carregar, validar)
+    ├── 01_sql/                           7 scripts de exploração + ACHADOS_SQL.md
+    ├── 02_powerbi/
+    │   ├── medidas.json                  fórmula, pasta e formato das 173 medidas e das colunas
+    │   ├── aplicar_medidas.ps1           aplica medidas.json no Power BI aberto
+    │   ├── gerar_paginas.py              gera as 7 páginas no projeto .pbip
+    │   ├── gerar_fundo*.ps1, gerar_icone_equipe.ps1   imagens de fundo e ícone
+    │   ├── tema_farma.json               tema de cores
+    │   ├── medidas_dax.md                catálogo comentado das medidas de negócio
+    │   └── ferramentas/                  conferência: consultar_dax.ps1, testar_selecoes.py, comparar_paginas.py
+    ├── 03_documentacao/                  este documento (MD, HTML e PDF) + exportar_pdf.py
+    ├── 04_apresentacao/                  apresentação .pptx + gerar_apresentacao.js + fontes dos slides online
+    └── 05_site/                          gerar_site.py e exportar_slides.ps1 (geram site_farma_xperiun/)</code></pre>
+<p><strong>Fluxo de trabalho:</strong></p>
+<ol><li><strong>Medidas:</strong> edite <code>medidas.json</code>, rode <code>aplicar_medidas.ps1</code> com o Power BI <strong>aberto</strong> no <code>.pbip</code> e salve (Ctrl+S).</li><li><strong>Páginas:</strong> com o Power BI <strong>fechado</strong>, rode <code>python -I gerar_paginas.py &lt;pasta FarmaXperiun.Report&gt; [página]</code> e reabra o <code>.pbip</code>.</li><li><strong>Ajuste manual:</strong> se alguém mexer no Power BI, salve, feche e compare os <code>visual.json</code> com o gerador antes de regerar, para não perder o ajuste. Essa comparação também ensina a configuração certa quando o gerador não acerta algo. Foi assim que se descobriu a borda fechada da tabela (<code>grid.outlineStyle = 15</code>).</li><li><strong>Conferência:</strong> com o Power BI aberto, <code>ferramentas/testar_selecoes.py</code> avalia medidas em várias seleções de filtro, e <code>ferramentas/comparar_paginas.py</code> mostra o que mudou nas páginas em relação ao gerador.</li><li><strong>Entrega:</strong> abra o <code>.pbip</code>, Arquivo &gt; Salvar como &gt; <code>.pbix</code>, publique e use Publicar na Web.</li><li><strong>Documentação:</strong> edite este Markdown e rode <code>python -I exportar_pdf.py</code> (gera o HTML e o PDF; precisa do Microsoft Edge).</li><li><strong>Apresentação:</strong> edite <code>gerar_apresentacao.js</code> e rode com Node.js e <code>pptxgenjs</code> instalados.</li><li><strong>Site:</strong> rode <code>exportar_slides.ps1</code> (precisa do PowerPoint) e depois <code>python -I gerar_site.py</code>; a pasta <code>site_farma_xperiun/</code> é recriada com a documentação e a apresentação atuais.</li></ol>
+<hr>
+<h2>11. Limitações e próximos passos</h2>
+<ul><li><strong>Período:</strong> os dados vão até 08/10/2019, e as metas de out a dez/2019 estão zeradas. As comparações tratam isso, mas qualquer total de 2019 é parcial.</li><li><strong>Sazonalidade invertida:</strong> o padrão é de hemisfério norte, possivelmente por a base ter origem em dados de outro país. Os picos respiratórios não devem ser usados para planejar o inverno brasileiro sem confirmar com dados reais.</li><li><strong>Anomalias registradas:</strong> jan/2017 com vendas desmembradas e 26 dias sem venda. Não foram corrigidos, só documentados.</li><li><strong>Meta só para a farmácia inteira:</strong> não há meta por grupo, turno ou fornecedor, por isso o atingimento some com esses filtros.</li><li><strong>Feriados móveis</strong> não estão no calendário.</li><li><strong>Atualização:</strong> o modelo importa do SQL Server local. Para atualizar no serviço do Power BI seria preciso um gateway; o relatório publicado é um retrato dos dados.</li><li><strong>Publicar na Web</strong> deixa o relatório público para qualquer pessoa com o link.</li></ul>
+<p><strong>Próximos passos sugeridos:</strong></p>
+<ul><li>simular o lucro sem desconto ou com desconto por critério (turno, produto);</li><li>simular uma meta realista, baseada no crescimento médio real;</li><li>detalhar a queda de 2017 por produto e por mês;</li><li>incluir estoque e ruptura, se houver dados, para validar a recomendação sobre fornecedores com prazo longo.</li></ul></article></main>
+<footer class="rodape"><div class="in"><span>Data Challenge Xperiun · Fase 2 · Equipe Olist Squad</span><span><a href="https://vileladigit.com.br">vileladigit.com.br</a></span></div></footer>
+</body></html>
